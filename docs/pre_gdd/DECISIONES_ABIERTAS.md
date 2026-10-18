@@ -52,8 +52,11 @@
 
 | ART-016 | DIRECCIÓN APROBADA PRE-GDD | Música **instrumental y coros épicos/etéreos según cada momento**; no convertir toda la OST en coral ni asumir letras. | Uso vocal por escena, idiomas/letras, producción y sincronización de stems. |
 
+| ART-017 | DIRECCIÓN APROBADA PRE-GDD | **Doblaje parcial**: texto completo para conversaciones, vocalizaciones breves y voces/frases cortas para combate. No doblaje íntegro. | Idiomas, catálogo de frases, consistencia de voz IA, localización y QA. |
+
 ## Registro de cambios
 
+- **2026-10-18 — Doblaje parcial:** ART-017. El autor elige expresiones cortas de personajes y voces de batalla, sin doblaje completo de los diálogos.
 - **2026-10-18 — Voces en la música:** ART-016. El autor combina A y B según escena: temas instrumentales y momentos con coro épico/etéreo; canciones con letra y doblaje siguen sin definirse.
 - **2026-10-18 — Dirección musical:** ART-015. El autor elige C: base orquestal melódica con identidad escandinava. Mantener opciones de coro, instrumentos y producción como hipótesis, no decisiones implícitas.
 - **2026-10-18 — Escenas de diálogo híbridas:** confirmada la opción C como ART-014, combinando fondos 2D ilustrados con diálogos sobre el mapa 3D.
