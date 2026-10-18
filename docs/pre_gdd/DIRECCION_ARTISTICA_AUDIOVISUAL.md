@@ -65,7 +65,24 @@ La cantidad de vistas del sprite, las reglas de corrección y si puede convivir 
 - **Héroes únicos:** rasgos y paleta reconocibles entre mapa, retrato y combate.
 - **Genéricos:** familias modulares por clase y facción; variación sostenible compatible con animación y equipo.
 
-**Siguiente etapa de la conversación:** concretar diseño de combate lateral (timing y estilo), interfaz/HUD, efectos mágicos/VFX, retratos/diálogos y producción sonora para convertir esta visión en biblia audiovisual; luego GDD y roadmap.
+**Siguiente etapa de la conversación:** afinar interfaz/HUD y retratos/diálogos, y más adelante detalles de VFX, música y producción, para completar la biblia audiovisual antes del GDD y roadmap.
+
+## Decisiones confirmadas: uso limitado de 3D, combate lateral y VFX (2026-10-18)
+
+El autor ha concretado las siguientes decisiones después de seleccionar el estilo de personajes. Se registran como **dirección audiovisual aprobada para el diseño**, no como sistema implementado:
+
+- **ART-008 — 3D mínimo y funcional.** Usar geometría y espacio 3D principalmente por la **cuadrícula isométrica, elevación XYZ y cámara libre**. Priorizar arte dibujado 2D para personajes, fondos, retratos y combate. Evitar modelos 3D de personajes y escenarios complejos salvo donde sean imprescindibles para el mapa.
+- **ART-009 — Combate lateral 2D de cuerpo entero.** Referencia de puesta en escena: Fire Emblem, con ambos personajes completos visibles, vista lateral, posiciones legibles, cámara mayormente estable, movimientos cortos, impactos y regreso a poses claras. Animaciones críticas/skills pueden ser más impactantes sin imponer un formato de cinemática continua. El combate lateral sigue siendo opcional y puede sustituirse por animación en mapa.
+- **ART-010 — Fondos laterales pintados en 2D con parallax suave (elección B, formulada como preferencia).** Capas lejanas, plano medio y suelo/primer plano, desplazamiento limitado para dar profundidad. No reutilizar como requisito el escenario 3D del mapa para el fondo de duelo. Fondos reutilizables asociados a bioma/localización. Partículas o animación ambiental más compleja no son requisito de base.
+- **ART-011 — Efectos y magia vistosos pero limpios (elección B).** Los VFX de impactos, críticos, curación, buffs/debuffs y estados, así como magias de fuego, hielo, viento, trueno, luz y magia negra, deben resultar expresivos y atractivos **sin ocultar a los personajes ni perjudicar la lectura táctica**. Destellos, sacudidas, partículas y capas son herramientas posibles; nivel exacto de espectáculo por habilidad pendiente de pruebas. No asumir duraciones ni sistemas de partículas concretos.
+
+### Consecuencias prácticas para el prototipo y el pipeline IA
+
+1. La prioridad es verificar un **mapa 3D ligero con terreno/texturas ilustradas y sprites 2D con billboard corregido** bajo cámara libre; no producir un ejército de modelos humanos 3D como plan principal.
+2. Producir una escena lateral 2D con **dos personajes completos**, fondo 2D pintado multicapa y VFX legibles. El sistema de combate calcula el resultado antes de su representación.
+3. Reservar gestos y golpes más elaborados para críticos y skills, conservando un ciclo base de ataque reutilizable para genéricos.
+4. Evaluar material generado por IA por coherencia entre frames, transparencia, siluetas, licencias y tiempo de corrección; el parallax exige capas limpias, no basta un único JPG plano.
+5. Pendiente: contenido exacto y sistema de VFX, música sincronizada, rig/frames, interfaz y estilo de retratos. Ninguna de estas decisiones establece producción validada o coste final.
 
 ## Agenda sugerida, NO elecciones predeterminadas
 
@@ -79,4 +96,4 @@ La cantidad de vistas del sprite, las reglas de corrección y si puede convivir 
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Seis decisiones visuales de personajes aprobadas como visión pre-GDD**; técnica de billboard corregido aún por probar. Continuar con combate lateral, interfaz, VFX y sonido antes de escribir biblia audiovisual/GDD/roadmap.
+**Decisiones ART-001 a ART-011 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar en prototipo. Continuar con interfaz/HUD, retratos y pipeline audiovisual antes del GDD/roadmap.
