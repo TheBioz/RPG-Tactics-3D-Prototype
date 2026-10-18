@@ -56,8 +56,11 @@
 
 | ART-018 | DIRECCIÓN APROBADA PRE-GDD | **Inglés como idioma principal del doblaje parcial**: vocalizaciones y frases cortas de diálogo/combate. | Acentos, pronunciación, textos/subtítulos localizados, voces IA y QA. |
 
+| ART-019 | DIRECCIÓN APROBADA PRE-GDD | **Español e inglés** como idiomas iniciales de textos, menús, HUD y subtítulos; voces parciales solo en inglés. | Variante regional, glosarios, QA, pipeline de traducción y UX multilingüe. |
+
 ## Registro de cambios
 
+- **2026-10-18 — Localización escrita:** ART-019. El autor confirma textos, menús e interfaz/subtítulos en inglés y español desde el inicio; el audio permanece en inglés. Idiomas adicionales no acordados.
 - **2026-10-18 — Idioma del doblaje:** ART-018. El autor elige inglés para las voces parciales; idiomas de textos y subtítulos independientes y aún pendientes de decidir.
 - **2026-10-18 — Doblaje parcial:** ART-017. El autor elige expresiones cortas de personajes y voces de batalla, sin doblaje completo de los diálogos.
 - **2026-10-18 — Voces en la música:** ART-016. El autor combina A y B según escena: temas instrumentales y momentos con coro épico/etéreo; canciones con letra y doblaje siguen sin definirse.
