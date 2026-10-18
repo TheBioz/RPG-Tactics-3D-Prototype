@@ -48,8 +48,11 @@
 
 | ART-014 | DIRECCIÓN APROBADA PRE-GDD | Sistema **híbrido de diálogos**: fondos ilustrados 2D para escenas narrativas y conversaciones sobre el mapa 3D durante batallas, con retratos de busto. | Criterios de cambio, cámara, animación y transiciones. |
 
+| ART-015 | DIRECCIÓN APROBADA PRE-GDD | **Opción C: fantasía orquestal con identidad escandinava**, variación cultural, leitmotivs y versiones normal/attack de batalla. | Instrumentación definitiva, coros/voces, composición IA, stems, transición y presupuesto. |
+
 ## Registro de cambios
 
+- **2026-10-18 — Dirección musical:** ART-015. El autor elige C: base orquestal melódica con identidad escandinava. Mantener opciones de coro, instrumentos y producción como hipótesis, no decisiones implícitas.
 - **2026-10-18 — Escenas de diálogo híbridas:** confirmada la opción C como ART-014, combinando fondos 2D ilustrados con diálogos sobre el mapa 3D.
 - **2026-10-18 — Retratos para diálogos:** ART-013. El usuario confirma retratos de busto al estilo Fire Emblem. Quedan abiertas las expresiones, los fondos y la disposición exacta.
 - **2026-10-18 — Dirección de interfaz:** ART-012. El autor elige una UI limpia, complementada por toques artísticos distintivos, sin fijar todavía su motivo visual, tipografía o distribución. Véase [DIRECCION_ARTISTICA_AUDIOVISUAL.md](DIRECCION_ARTISTICA_AUDIOVISUAL.md).

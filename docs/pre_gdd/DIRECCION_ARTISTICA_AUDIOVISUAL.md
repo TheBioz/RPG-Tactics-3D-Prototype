@@ -119,6 +119,29 @@ Los retratos de busto anime estilo Fire Emblem (**ART-013**) y la interfaz limpi
 
 **Pendiente de definir:** cuándo alternar ambas presentaciones, si hay transiciones, efectos, animación de retratos y gestión de la cámara del mapa durante los diálogos. La elección no valida todavía costes ni implementación.
 
+## ART-015 — Identidad musical (decisión del autor, 2026-10-18)
+
+**Elección explícita: C — Fantasía orquestal con identidad escandinava.** La banda sonora tendrá una base melódica/orquestal de RPG táctico de fantasía (en la tradición musical de los JRPG) enriquecida con timbres, instrumentos, ritmos y atmósferas de inspiración nórdica. No será una OST exclusivamente folclórica/vikinga ni una banda sonora orquestal genérica sin carácter.
+
+Se mantienen como parte de la visión anterior:
+- **Leitmotivs** reconocibles de personajes, facciones, lugares, escenas importantes y conflictos narrativos, transformados según evoluciona su arco.
+- Progresión expresiva desde aventura humana relativamente íntima hasta una escala dramática, trágica y épica conforme la historia se aproxima a la crisis post-Ragnarök.
+- Temas de batalla con **versión normal** para el tablero y **versión attack** más intensa para el combate lateral 2D. La continuidad musical entre ambas deberá diseñarse; no asumir que dos canciones IA independientes sincronizarán bien.
+- Culturas del mundo con personalidad musical propia; mantener influencias escandinavas sin reducir todas las sociedades a un mismo estilo.
+
+### Paleta de producción a explorar (PROPUESTA, no fijada)
+
+- **Base orquestal:** cuerdas, metales, madera, piano/arpa y percusión cinemática para acción, emoción y desarrollo temático.
+- **Color nórdico:** cuerdas frotadas tradicionales, flautas, liras, drones, percusiones de piel y voces/coros cuando sean dramáticamente adecuados. Comprobar autenticidad, disponibilidad y licencias de los sonidos; no convertirlos en clichés obligatorios.
+- **Capas de intensidad:** mismo motivo/tempo y estructura armónica en versiones map/attack, idealmente con stems editables, variaciones arregladas y transición musical planificada.
+- **Identidad por situación:** batalla campal, intriga política, ruinas, Bifröst, Hel, resolución íntima y clímax cósmico pueden compartir motivos sin tener la misma instrumentación.
+
+### Pendiente de decidir y validar
+
+Cuánta música coral/vocal frente a instrumental; si existen canciones con letra; doblaje, vocalizaciones y SFX; lista real de instrumentos; idiomas/letras; número de temas; especificación stems/loop; BPM, transiciones y middleware/audio Godot; modelos IA, derechos comerciales, edición humana, mezcla/master y costes.
+
+**Control de calidad IA:** evaluar calidad musical real, repetibilidad de melodías, identidad temática, loop sin clicks, uniformidad de volumen, ausencia de material imitado indebidamente y licencia verificable. Estos son criterios propuestos, no resultados obtenidos.
+
 ## Agenda sugerida, NO elecciones predeterminadas
 
 1. Estilo global: anime 2D ilustrado, línea, paleta, saturación, sombreado y referencias visuales.
@@ -131,4 +154,4 @@ Los retratos de busto anime estilo Fire Emblem (**ART-013**) y la interfaz limpi
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Decisiones ART-001 a ART-014 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
+**Decisiones ART-001 a ART-015 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
