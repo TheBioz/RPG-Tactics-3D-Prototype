@@ -35,3 +35,7 @@ Recortar una versión de busto **como referencia de identidad**, pero generar `n
 - Los valores de resolución, software (rig), frames/timing y coste definitivo se decidirán a partir de la prueba, no como suposición.
 
 **Documentos relacionados:** [Character Master v0.1](PC-001_VANGUARD_LANCER_CHARACTER_MASTER_v0.1.md) y [Revisión C0 candidata 01](PC-001_C0_REVISION_CANDIDATO_01.md).
+
+## Actualización — prueba realizada el 2026-10-18
+
+Se han intentado tres generaciones de vista lateral, **rechazadas** por producir láminas y pixel art en lugar del actor anime 2D aislado solicitado. Ver [reporte con hashes y nuevo método](PC-001_SIDE_VIEW_TEST_RESULT_2026-10-18.md). No considerar el gate C3 aprobado.

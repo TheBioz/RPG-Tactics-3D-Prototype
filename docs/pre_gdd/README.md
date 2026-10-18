@@ -21,6 +21,8 @@
 
 - [Revisión C0 — PC-001 candidato visual 01](personajes/PC-001_C0_REVISION_CANDIDATO_01.md) — evaluación del primer concept generado, problemas para animación, propuestas de simplificación y aprobación visual pendiente. **No canon final**.
 
+- [PC-001 — Resultado de tres pruebas fallidas de perfil y nuevo procedimiento guiado](personajes/PC-001_SIDE_VIEW_TEST_RESULT_2026-10-18.md). No hay sprite válido. Validador técnico: [validate_actor_png.py](../../tools/art/validate_actor_png.py).
+
 ## Origen y jerarquía de la información
 
 - Mensaje del autor del 2026-10-18 sobre mecánicas, modos, tecnología y objetivos.
