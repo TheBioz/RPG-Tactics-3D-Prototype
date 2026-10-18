@@ -54,8 +54,11 @@
 
 | ART-017 | DIRECCIÓN APROBADA PRE-GDD | **Doblaje parcial**: texto completo para conversaciones, vocalizaciones breves y voces/frases cortas para combate. No doblaje íntegro. | Idiomas, catálogo de frases, consistencia de voz IA, localización y QA. |
 
+| ART-018 | DIRECCIÓN APROBADA PRE-GDD | **Inglés como idioma principal del doblaje parcial**: vocalizaciones y frases cortas de diálogo/combate. | Acentos, pronunciación, textos/subtítulos localizados, voces IA y QA. |
+
 ## Registro de cambios
 
+- **2026-10-18 — Idioma del doblaje:** ART-018. El autor elige inglés para las voces parciales; idiomas de textos y subtítulos independientes y aún pendientes de decidir.
 - **2026-10-18 — Doblaje parcial:** ART-017. El autor elige expresiones cortas de personajes y voces de batalla, sin doblaje completo de los diálogos.
 - **2026-10-18 — Voces en la música:** ART-016. El autor combina A y B según escena: temas instrumentales y momentos con coro épico/etéreo; canciones con letra y doblaje siguen sin definirse.
 - **2026-10-18 — Dirección musical:** ART-015. El autor elige C: base orquestal melódica con identidad escandinava. Mantener opciones de coro, instrumentos y producción como hipótesis, no decisiones implícitas.
