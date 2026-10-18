@@ -51,6 +51,10 @@ La música de combate apunta a **versión normal en el mapa y versión attack en
 
 **Siguiente bloque acordado como conversación, no decisión de implementación:** definir un pipeline IA para **personajes**: diseño maestro → retrato de busto → unidad mini-anime sobre mapa → actor de cuerpo entero para combate lateral, **mismo personaje reconocible**. Animación, coste, consistencia y exportabilidad como pruebas obligatorias antes de producir en masa.
 
+## Experimento de personajes documentado (PC-001)
+
+Se ha preparado la ficha **[PC-001 Vanguard Lancer — Character Master v0.1](personajes/PC-001_VANGUARD_LANCER_CHARACTER_MASTER_v0.1.md)** como **propuesta no canónica** de ensayo de la metodología heredada de RTM AI Art Factory. Todavía **no hay imagen maestra aprobada, asset jugable ni pipeline validado**. El siguiente hito es la revisión visual E0/C0.
+
 ## Regla de interpretación
 
 **Dirección elegida ≠ factibilidad demostrada ≠ entrega prometida para V1.** Las propuestas técnicas o ejemplos del asistente, aun documentados, no se vuelven decisiones por aparecer aquí.
