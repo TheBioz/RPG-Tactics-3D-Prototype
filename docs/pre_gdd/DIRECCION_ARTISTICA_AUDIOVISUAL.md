@@ -160,7 +160,15 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 
 **Producción IA y QA:** conservar una referencia vocal propia y estable por personaje, revisar pronunciación, tono, volumen, articulación y derechos de explotación comercial, no imitar voces reales sin autorización; contar con controles de volumen independientes para música, SFX y voces.
 
-**No decidido:** idioma(s) hablado(s), localización y subtítulos, cantidad exacta de frases por personaje/clase, voz del narrador, reparto de voces humanas/IA y si habrá excepciones puntuales con diálogo completo. No se aprueba ninguna canción con letra por esta decisión.
+**No decidido:** localización escrita y subtítulos, acento inglés, cantidad exacta de frases por personaje/clase, voz del narrador, reparto de voces humanas/IA y si habrá excepciones puntuales con diálogo completo. No se aprueba ninguna canción con letra por esta decisión.
+
+## ART-018 — Idioma del doblaje parcial (confirmado el 2026-10-18)
+
+**Elección explícita: inglés** como idioma principal de las voces de personajes. Se aplica al **doblaje parcial aprobado en ART-017**: reacciones y vocalizaciones de diálogo, frases breves, selección y voces de combate. No cambia la decisión de no doblar todos los diálogos.
+
+**Importante:** el idioma del audio **no determina los idiomas disponibles para los textos, menús y subtítulos**. La localización escrita (por ejemplo, inglés y español) sigue pendiente de confirmación. Las vocalizaciones sin palabras no necesitan localización.
+
+**Producción y QA propuestos, no validados:** crear identidad vocal coherente por personaje, comprobar inteligibilidad y acento elegido, consistencia de pronunciación para nombres nórdicos, derechos de uso comercial y volúmenes independientes de voces/SFX/música. El acento exacto (británico, estadounidense, regional o ficcional) está por decidir.
 
 ## Agenda sugerida, NO elecciones predeterminadas
 
@@ -174,4 +182,4 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Decisiones ART-001 a ART-017 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
+**Decisiones ART-001 a ART-018 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
