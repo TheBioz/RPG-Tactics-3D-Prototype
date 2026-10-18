@@ -46,8 +46,11 @@
 
 | ART-013 | DIRECCIÓN APROBADA PRE-GDD | Retratos de busto anime inspirados en Fire Emblem para las conversaciones, no personajes de medio cuerpo como formato habitual. | Expresiones, fondos, composición y animación por definir. |
 
+| ART-014 | DIRECCIÓN APROBADA PRE-GDD | Sistema **híbrido de diálogos**: fondos ilustrados 2D para escenas narrativas y conversaciones sobre el mapa 3D durante batallas, con retratos de busto. | Criterios de cambio, cámara, animación y transiciones. |
+
 ## Registro de cambios
 
+- **2026-10-18 — Escenas de diálogo híbridas:** confirmada la opción C como ART-014, combinando fondos 2D ilustrados con diálogos sobre el mapa 3D.
 - **2026-10-18 — Retratos para diálogos:** ART-013. El usuario confirma retratos de busto al estilo Fire Emblem. Quedan abiertas las expresiones, los fondos y la disposición exacta.
 - **2026-10-18 — Dirección de interfaz:** ART-012. El autor elige una UI limpia, complementada por toques artísticos distintivos, sin fijar todavía su motivo visual, tipografía o distribución. Véase [DIRECCION_ARTISTICA_AUDIOVISUAL.md](DIRECCION_ARTISTICA_AUDIOVISUAL.md).
 - **2026-10-18 — Combate lateral, parallax y VFX:** ART-008 a ART-011. 3D mínimo para el mapa, combate 2D con cuerpos completos, fondos 2D en capas con parallax suave y efectos vistosos pero limpios; sin fijar aún implementación ni tiempos. Véase [DIRECCION_ARTISTICA_AUDIOVISUAL.md](DIRECCION_ARTISTICA_AUDIOVISUAL.md).
