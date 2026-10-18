@@ -103,6 +103,14 @@ El autor ha concretado las siguientes decisiones después de seleccionar el esti
 
 Paleta exacta, tipografías, iconografía, marco/nudo/runa concreto, densidad de HUD, posición de minimapa, layout para 4 jugadores, presentación del orden de activación, diagramas de rangos/altura, estilo de ventanas de diálogo, menú principal, escalas/resoluciones y guía de interacción. Validar con una **captura funcional de batalla de mapa pequeño y grande** antes de fijar la biblia UI.
 
+## ART-013 — Retratos narrativos (elección confirmada 2026-10-18)
+
+El autor elige **retratos anime de busto al estilo Fire Emblem** para conversaciones, en vez de ilustraciones habituales de medio cuerpo estilo novela visual. Se priorizan expresiones legibles, identidad facial consistente y diálogo ágil.
+
+**Propuestas técnicas pendientes de validación:** retrato maestro por personaje y expresiones con identidad controlada mediante IA; varias emociones a partir de referencias aprobadas; cajas de texto limpias con pequeños motivos artísticos. Los retratos deben representar al mismo personaje que los sprites mini-anime del mapa y las animaciones completas del combate lateral.
+
+**No decidido:** cantidad de expresiones, fondos de diálogo ilustrados o mapa 3D como fondo, posicionamiento exacto de retratos, animación de boca/ojos, doblaje, dimensiones y transiciones.
+
 ## Agenda sugerida, NO elecciones predeterminadas
 
 1. Estilo global: anime 2D ilustrado, línea, paleta, saturación, sombreado y referencias visuales.
@@ -115,4 +123,4 @@ Paleta exacta, tipografías, iconografía, marco/nudo/runa concreto, densidad de
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Decisiones ART-001 a ART-012 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
+**Decisiones ART-001 a ART-013 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
