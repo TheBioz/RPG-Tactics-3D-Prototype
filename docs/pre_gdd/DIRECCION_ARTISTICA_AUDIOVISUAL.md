@@ -166,9 +166,23 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 
 **Elección explícita: inglés** como idioma principal de las voces de personajes. Se aplica al **doblaje parcial aprobado en ART-017**: reacciones y vocalizaciones de diálogo, frases breves, selección y voces de combate. No cambia la decisión de no doblar todos los diálogos.
 
-**Importante:** el idioma del audio **no determina los idiomas disponibles para los textos, menús y subtítulos**. La localización escrita (por ejemplo, inglés y español) sigue pendiente de confirmación. Las vocalizaciones sin palabras no necesitan localización.
+**Importante:** el idioma del audio **no determina los idiomas disponibles para los textos, menús y subtítulos**. La localización escrita se ha confirmado posteriormente como español e inglés (véase ART-019). Las vocalizaciones sin palabras no necesitan localización.
 
 **Producción y QA propuestos, no validados:** crear identidad vocal coherente por personaje, comprobar inteligibilidad y acento elegido, consistencia de pronunciación para nombres nórdicos, derechos de uso comercial y volúmenes independientes de voces/SFX/música. El acento exacto (británico, estadounidense, regional o ficcional) está por decidir.
+
+## ART-019 — Idiomas iniciales de texto y subtítulos (confirmado el 2026-10-18)
+
+**Decisión del autor:** ofrecer **español e inglés** como idiomas iniciales de **textos narrativos, menús, interfaz y subtítulos**. Esta elección es **independiente del doblaje parcial en inglés** acordado en ART-017 y ART-018.
+
+**Implicaciones de diseño propuestas para validar:**
+- Centralizar las cadenas localizables en recursos/datos, nunca incrustarlas en imágenes generadas por IA ni en texturas de interfaz.
+- Permitir cambiar el idioma de los textos desde opciones, con compatibilidad para mando y PC.
+- Hacer que el diseño de ventanas, diálogos, tooltips y controles soporte textos de distintas longitudes; mantener terminología consistente de clases, armas, estadísticas, estados, topónimos y habilidades.
+- Incluir las frases vocales en inglés y subtítulos/localizaciones escritas en ambos idiomas cuando su contenido tenga significado narrativo o mecánico; los gritos y sonidos no verbales no requieren traducción literal.
+- Mantener glosarios y QA de ambas versiones, con especial cuidado de nombres propios de inspiración nórdica.
+- Facilitar futuras traducciones **sin comprometer todavía idiomas adicionales**.
+
+**Pendiente:** variante regional del español e inglés, idioma de redacción maestro, procedimiento de traducción y revisión, selección automática del idioma del sistema, formato exacto de subtítulos y criterios de QA. Esta es una decisión de intención de producto pre-GDD, no una afirmación de que la localización ya esté implementada.
 
 ## Agenda sugerida, NO elecciones predeterminadas
 
@@ -182,4 +196,4 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Decisiones ART-001 a ART-018 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
+**Decisiones ART-001 a ART-019 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
