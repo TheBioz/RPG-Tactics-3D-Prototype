@@ -150,6 +150,18 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 
 **No asumido:** canciones con letra, idioma inventado, cantidad de pistas corales, actuación de voz en diálogos ni proveedores musicales IA. Requerirían decisiones separadas. La versión normal/attack de cada batalla deberá respetar esta elección artística y garantizar transiciones viables.
 
+## ART-017 — Doblaje parcial y expresividad sonora de los personajes (confirmado el 2026-10-18)
+
+**Decisión del autor: opción B — doblaje parcial.** Los diálogos de historia se presentan **principalmente por escrito**, con **expresiones vocales breves** que transmiten emoción (risa, sorpresa, queja, grito y otras reacciones) y **voces en combate** para acciones, esfuerzos y frases cortas. No se presupone doblar todas las líneas narrativas.
+
+**Objetivo:** personajes memorables y expresivos sin la complejidad de sintetizar, dirigir, revisar y localizar todas las conversaciones, especialmente con diálogos ramificados.
+
+**Propuesta de aplicación, pendiente de pruebas:** definir una paleta pequeña y coherente de vocalizaciones por héroe (expresiones emocionales, selección, movimiento y combate), con variaciones controladas para evitar repetición; la prioridad en esfuerzo será mayor en héroes y jefes, más genérica en tropas comunes. Las intervenciones importantes pueden emplear frases breves, sin que esta decisión obligue a escenas enteras dobladas.
+
+**Producción IA y QA:** conservar una referencia vocal propia y estable por personaje, revisar pronunciación, tono, volumen, articulación y derechos de explotación comercial, no imitar voces reales sin autorización; contar con controles de volumen independientes para música, SFX y voces.
+
+**No decidido:** idioma(s) hablado(s), localización y subtítulos, cantidad exacta de frases por personaje/clase, voz del narrador, reparto de voces humanas/IA y si habrá excepciones puntuales con diálogo completo. No se aprueba ninguna canción con letra por esta decisión.
+
 ## Agenda sugerida, NO elecciones predeterminadas
 
 1. Estilo global: anime 2D ilustrado, línea, paleta, saturación, sombreado y referencias visuales.
@@ -162,4 +174,4 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Decisiones ART-001 a ART-016 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
+**Decisiones ART-001 a ART-017 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
