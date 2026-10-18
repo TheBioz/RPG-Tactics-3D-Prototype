@@ -8,7 +8,7 @@
 - **Turnos por casillas cuadradas**; desplazamiento, ataque, defensa, rangos, terreno y objetivos.
 - **Velocidad y características propias** diferencian unidades. Estadísticas, tipo de movimiento, crítico, defensa, fuerza y alcance importan más que una proliferación de skills.
 - **Skills escasas y definitorias** de clases y personales, con ejemplos de inspiración Fire Emblem como Aether, Astra, Luna; evitar asumir que nombres o comportamientos existentes se adoptan literalmente.
-- **Triángulo de armas:** espada > hacha > lanza > espada (orden concreto y bonificaciones por especificar). **Arco neutral** al triángulo y categoría propia.
+- **Triángulo de armas:** espada, lanza y hacha, con relaciones de ventaja por concretar; **arco neutral** al triángulo y categoría propia. No se fijan todavía dirección de ventajas ni bonificaciones exactas.
 - **Competencia/nivel de arma:** progresión por categoría que permite o impide equipar ciertas armas.
 - **Magia:** elemental (fuego, viento, hielo y trueno), negra y luz; no solo daño: AOE, estados, control, buffs/debuffs, efectos y utilidades, combinaciones por diseñar.
 - **Terrenos:** costes distintos por tipo de movimiento, bonificaciones y penalizaciones, muros/barreras y casillas infranqueables; unidades voladoras pueden franquear ciertos obstáculos.
