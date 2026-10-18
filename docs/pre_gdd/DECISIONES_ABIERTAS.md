@@ -44,8 +44,11 @@
 
 | ART-012 | DIRECCIÓN APROBADA PRE-GDD | **Interfaz limpia y legible con detalles artísticos singulares** que expresen identidad sin ensuciar el HUD táctico. | Motivos, layout, tipografía, iconografía, PC/consola y accesibilidad. |
 
+| ART-013 | DIRECCIÓN APROBADA PRE-GDD | Retratos de busto anime inspirados en Fire Emblem para las conversaciones, no personajes de medio cuerpo como formato habitual. | Expresiones, fondos, composición y animación por definir. |
+
 ## Registro de cambios
 
+- **2026-10-18 — Retratos para diálogos:** ART-013. El usuario confirma retratos de busto al estilo Fire Emblem. Quedan abiertas las expresiones, los fondos y la disposición exacta.
 - **2026-10-18 — Dirección de interfaz:** ART-012. El autor elige una UI limpia, complementada por toques artísticos distintivos, sin fijar todavía su motivo visual, tipografía o distribución. Véase [DIRECCION_ARTISTICA_AUDIOVISUAL.md](DIRECCION_ARTISTICA_AUDIOVISUAL.md).
 - **2026-10-18 — Combate lateral, parallax y VFX:** ART-008 a ART-011. 3D mínimo para el mapa, combate 2D con cuerpos completos, fondos 2D en capas con parallax suave y efectos vistosos pero limpios; sin fijar aún implementación ni tiempos. Véase [DIRECCION_ARTISTICA_AUDIOVISUAL.md](DIRECCION_ARTISTICA_AUDIOVISUAL.md).
 - **2026-10-18 — Cierre de elecciones de personaje:** aprobadas las seis opciones de dirección visual (ART-001 a ART-006), con cámara libre + billboard corregido. Se han detallado también entorno y música (ART-007). Véase [DIRECCION_ARTISTICA_AUDIOVISUAL.md](DIRECCION_ARTISTICA_AUDIOVISUAL.md). No implica que el prototipo haya superado las pruebas.
