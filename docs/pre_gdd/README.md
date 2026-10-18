@@ -3,7 +3,7 @@
 **Fecha de captura:** 2026-10-18  
 **Propósito:** conservar fielmente la visión del autor antes de escribir el Game Design Document (GDD) y el roadmap.  
 **Estado:** DOCUMENTACIÓN DE DESCUBRIMIENTO. No constituye especificación cerrada ni autoriza implementación.  
-**Próxima conversación:** dirección artística y audiovisual.
+**Avance actual:** seis decisiones de diseño de personajes aprobadas como visión pre-GDD; pendiente el detalle de combate lateral, UI, VFX y música.
 
 ## Fuentes y jerarquía
 
@@ -17,7 +17,7 @@
 - [MECANICAS_Y_MODOS.md](MECANICAS_Y_MODOS.md): captura integral de las mecánicas descritas.
 - [NARRATIVA_Y_PERSONAJES.md](NARRATIVA_Y_PERSONAJES.md): premisa, estructura de campaña y propuesta de reparto.
 - [DECISIONES_ABIERTAS.md](DECISIONES_ABIERTAS.md): estados y riesgos por resolver antes de cerrar el GDD.
-- [DIRECCION_ARTISTICA_AUDIOVISUAL.md](DIRECCION_ARTISTICA_AUDIOVISUAL.md): estado actual y guía para la siguiente sesión.
+- [DIRECCION_ARTISTICA_AUDIOVISUAL.md](DIRECCION_ARTISTICA_AUDIOVISUAL.md): elecciones visuales aprobadas (ART-001…ART-006), cámara libre + billboard corregido y dirección musical, con comprobaciones pendientes.
 - [fuentes/2026-10-18_iniciativa_y_narrativa_original.md](fuentes/2026-10-18_iniciativa_y_narrativa_original.md): fuente primaria literal del texto pegado.
 
 ## Convención de estados

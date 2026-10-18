@@ -29,8 +29,17 @@
 | PRE-023 | POR DECIDIR | Todos los modos comparten sistemas de unidades, combate, efectos y datos. | Políticas por modo y arquitectura de turnos multiplayer. |
 | PRE-024 | POR DECIDIR | GDD, roadmap, V1 y fecha de lanzamiento. | Redactar tras visión artística/audio y revisar juntos. |
 
+| ART-001 | DIRECCIÓN APROBADA PRE-GDD | Sprite de mapa **mini-anime táctico** (proporción intermedia). | Dimensión en pantalla, escala por zoom y QA en cámara libre. |
+| ART-002 | DIRECCIÓN APROBADA PRE-GDD | Anime **luminoso/heroico** de base, con variaciones **sobrias/melancólicas** según cultura y escena. | Paleta, style bible, referencias canónicas. |
+| ART-003 | DIRECCIÓN APROBADA PRE-GDD | Armaduras de **detalle medio**, bonitas y legibles. | Límites de detalle por distancia y técnica de animación. |
+| ART-004 | DIRECCIÓN APROBADA PRE-GDD | Genéricos **modulares** por clase/facción; héroes con identidad propia. | Modularidad técnica y coste de variantes. |
+| ART-005 | DIRECCIÓN APROBADA PRE-GDD | Combate lateral **vistoso**, con golpes y momentos memorables. | Animación, frames/rig, VFX y timing. |
+| ART-006 | DIRECCIÓN APROBADA PRE-GDD | **Billboard corregido** de unidades anime 2D, con **cámara libre**. | Algoritmo, pivote de pies, facings, sombras, oclusión y validación en Godot. |
+| ART-007 | VISIÓN EXPRESA (capturada) | Mundo 3D poligonal ilustrado/no pixel art tipo FFT; música escandinava no exclusivamente vikinga, leitmotivs y variantes **normal/attack**. | Style bible, producción musical por IA y transiciones fluidas. |
+
 ## Registro de cambios
 
+- **2026-10-18 — Cierre de elecciones de personaje:** aprobadas las seis opciones de dirección visual (ART-001 a ART-006), con cámara libre + billboard corregido. Se han detallado también entorno y música (ART-007). Véase [DIRECCION_ARTISTICA_AUDIOVISUAL.md](DIRECCION_ARTISTICA_AUDIOVISUAL.md). No implica que el prototipo haya superado las pruebas.
 - **2026-10-18 — Captura inicial:** tras explicaciones de mecánicas, prioridad Game-first, propuesta de iniciativa híbrida y texto de campaña. Sin implementar sistemas ni aprobar fórmulas; siguiente sesión: dirección artística y audiovisual.
 
 ### Regla futura
