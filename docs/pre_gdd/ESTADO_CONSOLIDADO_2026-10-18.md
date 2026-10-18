@@ -55,6 +55,10 @@ La música de combate apunta a **versión normal en el mapa y versión attack en
 
 Se ha preparado la ficha **[PC-001 Vanguard Lancer — Character Master v0.1](personajes/PC-001_VANGUARD_LANCER_CHARACTER_MASTER_v0.1.md)** como **propuesta no canónica** de ensayo de la metodología heredada de RTM AI Art Factory. Todavía **no hay imagen maestra aprobada, asset jugable ni pipeline validado**. El siguiente hito es la revisión visual E0/C0.
 
+## Documentos posteriores a esta fotografía de pre-GDD
+
+Ya existen [GDD v0.1](../GDD.md) y [Roadmap v0.1](../ROADMAP.md) redactados después de esta síntesis. Este documento conserva la fotografía histórica del pre-GDD; para la planificación operativa usar los borradores nuevos, aún pendientes de revisión.
+
 ## Regla de interpretación
 
 **Dirección elegida ≠ factibilidad demostrada ≠ entrega prometida para V1.** Las propuestas técnicas o ejemplos del asistente, aun documentados, no se vuelven decisiones por aparecer aquí.

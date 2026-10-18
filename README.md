@@ -2,7 +2,12 @@
 
 Proyecto experimental de RPG táctico por turnos. Dirección en estudio: mapas con geometría 3D isométrica y personajes/arte 2D estilo anime, desarrollo centrado primero en el juego y arquitectura preparada para un Maker posterior.
 
-**Estado: pre-GDD — recopilación de la visión; NO se ha aprobado todavía el GDD, el roadmap, el prototipo artístico ni una migración de código.**
+**Estado: preproducción. GDD v0.1 y Roadmap v0.1 redactados como BORRADORES para revisar, no especificaciones finales aprobadas; PoC y migración del antiguo juego no validados.**
+
+## Diseño y planificación
+
+- **[GDD v0.1](docs/GDD.md):** diseño completo, decisiones confirmadas, propuestas y cuestiones abiertas.
+- **[Roadmap v0.1](docs/ROADMAP.md):** ruta hasta Proof of Concept, vertical slice y etapas futuras, con Quality Gates.
 
 ## Documentación persistente
 
@@ -24,4 +29,4 @@ El texto original aportado por el usuario sobre iniciativa y narrativa se conser
 - La existencia de este repositorio no implica que el código de la antigua rama experimental esté ya copiado aquí.
 - **Visibilidad verificada el 2026-10-18: PUBLIC**. No añadir aquí secretos, claves de API o spoilers que se quieran mantener privados.
 
-No fijar plazos, alcance definitivo ni presupuestos de producción sin aprobar antes GDD y roadmap.
+**Los borradores v0.1 se han creado por petición del autor**, pero el alcance definitivo, costes, fechas y lanzamiento aún requieren revisión y aprobación expresa.

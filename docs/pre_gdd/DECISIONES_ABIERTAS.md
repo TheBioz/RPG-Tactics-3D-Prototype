@@ -27,7 +27,7 @@
 | PRE-021 | PROPUESTA NARRATIVA | Cuatro amigos ya unidos + Askr, protagonista-líder no elegido. | Personajes definitivos, motivaciones, rol de Askr y canon. |
 | PRE-022 | CONTEXTO PREVIO | Gjallarhorn, Yggdrasil, Embla, Bifröst, Níðhöggr, Tronos, Segundo Ragnarök. | Reconstrucción/confirmación del canon. |
 | PRE-023 | POR DECIDIR | Todos los modos comparten sistemas de unidades, combate, efectos y datos. | Políticas por modo y arquitectura de turnos multiplayer. |
-| PRE-024 | POR DECIDIR | GDD, roadmap, V1 y fecha de lanzamiento. | Redactar tras visión artística/audio y revisar juntos. |
+| PRE-024 | BORRADORES REDACTADOS | Se han creado **[GDD v0.1](../GDD.md)** y **[Roadmap v0.1](../ROADMAP.md)** a petición del autor. | Revisar y aprobar reglas pendientes, alcance PoC/V1, plazos, costes y lanzamiento; no aprobados automáticamente. |
 
 | ART-001 | DIRECCIÓN APROBADA PRE-GDD | Sprite de mapa **mini-anime táctico** (proporción intermedia). | Dimensión en pantalla, escala por zoom y QA en cámara libre. |
 | ART-002 | DIRECCIÓN APROBADA PRE-GDD | Anime **luminoso/heroico** de base, con variaciones **sobrias/melancólicas** según cultura y escena. | Paleta, style bible, referencias canónicas. |
@@ -59,6 +59,8 @@
 | ART-019 | DIRECCIÓN APROBADA PRE-GDD | **Español e inglés** como idiomas iniciales de textos, menús, HUD y subtítulos; voces parciales solo en inglés. | Variante regional, glosarios, QA, pipeline de traducción y UX multilingüe. |
 
 ## Registro de cambios
+
+- **2026-10-18 — GDD y Roadmap v0.1:** redactados por petición explícita del autor, con visión, reglas, alcance PoC propuesto, fases R0–R8 y Quality Gates. PRE-024 pasa de pendiente de redacción a borradores disponibles; aprobaciones, V1 y fechas siguen abiertos.
 
 - **2026-10-18 — Primer concept visual PC-001, C0 candidato 01:** se genera una hoja de cuerpo entero + busto + espalda y se documenta [revisión C0](personajes/PC-001_C0_REVISION_CANDIDATO_01.md). El diseño parece coherente, pero hay ornamentos/capa/pelo que simplificar; faltan perfil y aprobación visual del autor. **No aprobar C0 automáticamente ni considerar asset usable**.
 

@@ -1,9 +1,14 @@
 # Registro de visión — antes del GDD
 
 **Fecha de captura/consolidación:** 2026-10-18.  
-**Estado:** descubrimiento del producto, **no GDD ni roadmap aprobados**. Todas las opciones técnicas deben probarse.
+**Estado:** registro histórico de descubrimiento. Ya se han redactado [GDD v0.1](../GDD.md) y [Roadmap v0.1](../ROADMAP.md) como borradores pendientes de revisión; ningún PoC o alcance comercial queda aprobado por ello.
 
 **Avance:** se han capturado **PRE-001…PRE-024** (visión, mecánicas y pendientes) y **ART-001…ART-019** (elecciones aprobadas de arte, música, voces e idiomas).
+
+## Documentos de desarrollo surgidos de este pre-GDD
+
+- **[GDD v0.1](../GDD.md)** — visión y diseño estructurados, diferenciando confirmado/propuesto/abierto.
+- **[Roadmap v0.1](../ROADMAP.md)** — fases R0–R8 con prioridades y criterios de aceptación de PoC.
 
 ## Documentación principal
 
@@ -42,4 +47,4 @@
 
 Nunca sustituir decisiones históricas silenciosamente: anotar la evolución y los nuevos acuerdos en [el registro](DECISIONES_ABIERTAS.md). Mantener separados: visión, pruebas del PoC, alcance de V1, salida comercial y Maker futuro. No asignar costes, portar código antiguo o elegir herramientas IA sin aprobación. Las referencias a Fire Emblem, Advance Wars, FFT y BG3/D&D son inspiración, no copia de sistemas específicos.
 
-**Siguiente conversación:** diseñar el pipeline de personajes generados con IA, verificando **consistencia entre retrato de busto, sprite mini-anime de mapa y personaje completo de duelo lateral**, antes de escoger herramientas o producir grandes lotes.
+**Próximo trabajo operativo:** revisar los borradores y ejecutar las pruebas R0/R1 del Roadmap, con PC-001, rig de estocada y cámara libre sobre mapa XYZ. Sin generar lotes de arte ni aprobar técnicas sin prueba.

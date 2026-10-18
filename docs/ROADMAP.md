@@ -140,7 +140,7 @@ Una unidad visible se selecciona, mueve y mantiene pies y silueta creíbles mien
 
 ## 7. R4 — Combate, estado, objetivos e IA mínima
 
-- [ ] **R4-01** Definir ``UnitInstance`, HP, equipo/arma, clase y stats mínimos para un ataque físico y una magia simple.
+- [ ] **R4-01** Definir `UnitInstance`, HP, equipo/arma, clase y stats mínimos para un ataque físico y una magia simple.
 - [ ] **R4-02** Resolver daño/acierto y estado de forma reproducible; separar RNG y la presentación; log de `ActionResult`.
 - [ ] **R4-03** Implementar vista previa de movimiento/ataque, selección de blanco, comando validado, consumo de activación y derrota/retirada de unidad.
 - [ ] **R4-04** Introducir 1–2 tipos de terreno con coste/bonus, un ataque cuerpo a cuerpo y un ataque con alcance/efecto diferente.
