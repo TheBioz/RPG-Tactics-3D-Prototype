@@ -142,6 +142,14 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 
 **Control de calidad IA:** evaluar calidad musical real, repetibilidad de melodías, identidad temática, loop sin clicks, uniformidad de volumen, ausencia de material imitado indebidamente y licencia verificable. Estos son criterios propuestos, no resultados obtenidos.
 
+## ART-016 — Instrumental y coros según el momento (confirmado el 2026-10-18)
+
+**Decisión del autor: combinación de las opciones A y B según la escena.** La música puede ser **puramente instrumental**, especialmente cuando conviene acompañar el pensamiento táctico, la exploración y los diálogos cotidianos, o incorporar **coros épicos/etéreos y vocalizaciones** cuando el momento narrativo lo justifique. La intensidad y presencia de voces se diseñan **por situación**, no como un estilo único aplicado a todos los temas.
+
+**Aplicaciones posibles, todavía propuestas:** instrumental para la cuadrilla en aventuras iniciales o batallas ordinarias; coro contenido en ruinas/misterios; voces más solemnes para Hel, Yggdrasil o clímax. No establecer todavía una asignación definitiva por personaje/capítulo.
+
+**No asumido:** canciones con letra, idioma inventado, cantidad de pistas corales, actuación de voz en diálogos ni proveedores musicales IA. Requerirían decisiones separadas. La versión normal/attack de cada batalla deberá respetar esta elección artística y garantizar transiciones viables.
+
 ## Agenda sugerida, NO elecciones predeterminadas
 
 1. Estilo global: anime 2D ilustrado, línea, paleta, saturación, sombreado y referencias visuales.
@@ -154,4 +162,4 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Decisiones ART-001 a ART-015 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
+**Decisiones ART-001 a ART-016 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
