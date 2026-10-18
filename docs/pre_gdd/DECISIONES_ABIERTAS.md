@@ -1,0 +1,42 @@
+# Registro de visión, decisiones y cuestiones abiertas
+
+**Inicio:** 2026-10-18. El objetivo es no confundir deseos de producto con alcance confirmado de V1.
+
+| ID | Estado | Tema / constatación | Qué falta decidir |
+| --- | --- | --- | --- |
+| PRE-001 | VISIÓN EXPRESA | RPG táctico de cuadrícula que fusiona héroes tipo FE con control territorial tipo AW y variedad táctica/estado tipo FFT/BG3. | Reglas originales y límites de complejidad. |
+| PRE-002 | PREFERENCIA CON PRUEBA | Escenarios 3D isométricos con arte 2D anime, elevación, zoom/rotación. | Calidad en el prototipo artístico; sprite 2D vs 3D cel shading en mapa. |
+| PRE-003 | VISIÓN EXPRESA | PC/consolas, no Android. | Plataformas prioritarias, hardware mínimo y presupuesto de rendimiento. |
+| PRE-004 | VISIÓN EXPRESA | Campaña individual + refriegas de 1–4 jugadores competitivas o cooperativas. | Online/local, sincronización, reglas de alianzas y fase de lanzamiento. |
+| PRE-005 | VISIÓN FUTURA | Modo separado de supervivencia/mazmorra/roguelike co-op o en solitario con equipo. | Proceduralidad, persistencia, expediciones y fase de desarrollo. |
+| PRE-006 | PREFERENCIA FUERTE | Rondas completas con una activación ordinaria por unidad y ventanas proporcionales entre ejércitos desiguales. | Algoritmo exacto, múltiples jugadores, refuerzos, neutros, cierre de ronda. |
+| PRE-007 | POR DECIDIR | La velocidad debe importar a nivel de turno además del combate. | Prioridad, orden, cuotas, desempates, efecto sobre balance. |
+| PRE-008 | VISIÓN EXPRESA | Danza/Galeforce u otras habilidades podrán excepcionar activaciones. | Restricciones, costes, recursividad y sincronización. |
+| PRE-009 | VISIÓN EXPRESA | Unidades genéricas y únicas, mezclables, reclutamiento in-battle; ambas pueden subir nivel y promocionar. | Identidad visual genérica, economía, límites y reglas de promoción. |
+| PRE-010 | PREFERENCIA / SISTEMA OPCIONAL | Propiedades, captura, recursos, loot de neutral IA, crafting/equipamiento dentro de refriegas. | Diseño económico y grado de presencia por modo/mapa. |
+| PRE-011 | VISIÓN EXPRESA | Niveles con growths probabilísticos + pequeño pool de puntos manuales; enemigos usan asignación IA. | Cantidades, timings, clases, interfaz y balance. |
+| PRE-012 | VISIÓN EXPRESA | Skills poco frecuentes, armas con rango de maestría, espada/lanza/hacha triángulo, arco neutral; magia negra/luz/elemental y utilidades/AOE. | Fórmulas, catálogo elemental, estados y progresión. |
+| PRE-013 | VISIÓN EXPRESA | Derrota con heridas graves y descenso del countdown únicamente en batallas no desplegadas. Permadeath opcional con advertencia narrativa. | Acumulación, severidad, recuperación, modo de juego. |
+| PRE-014 | VISIÓN EXPRESA | Combate anime 2D lateral con zoom/transición **opcional**, y animación básica de mapa siempre. | Pipeline de animación, control, coste, tiempo de presentación. |
+| PRE-015 | VISIÓN EXPRESA | Mapas X/Y/Z, altura, muros/casillas impasables, voladores, minimapa, optimización grandes mapas. | Modelo de altura, caminos, 3D geometry, LoS, selección y LOD. |
+| PRE-016 | VISIÓN EXPRESA | Campaña como novela visual con decisiones en objetivos y neutrales, consecuencias y rutas. | Estructura de estados/capítulos; cantidad de finales (≈3 preferido). |
+| PRE-017 | VISIÓN EXPRESA | Evitar minijuegos/tareas de hub fuera de batallas. | Ritmo entre capítulos, gestión de equipo sin tedio. |
+| PRE-018 | PREFERENCIA FUERTE | Game-first, Maker-ready: desarrollar el RPG antes del Maker público. | Reutilización de código anterior y alcance mínimo de tooling interno. |
+| PRE-019 | VISIÓN EXPRESA | IA para toda producción de arte, música y audiovisual, presupuesto bajo y sin depender de artistas externos. | Modelos, herramientas, costes, limpieza, derechos y coherencia. |
+| PRE-020 | VISIÓN EXPRESA | Post-Ragnarök con raíz nórdica pero muchas culturas y conflictos humanos reales. | Historia mundial, geografía y cosmología. |
+| PRE-021 | PROPUESTA NARRATIVA | Cuatro amigos ya unidos + Askr, protagonista-líder no elegido. | Personajes definitivos, motivaciones, rol de Askr y canon. |
+| PRE-022 | CONTEXTO PREVIO | Gjallarhorn, Yggdrasil, Embla, Bifröst, Níðhöggr, Tronos, Segundo Ragnarök. | Reconstrucción/confirmación del canon. |
+| PRE-023 | POR DECIDIR | Todos los modos comparten sistemas de unidades, combate, efectos y datos. | Políticas por modo y arquitectura de turnos multiplayer. |
+| PRE-024 | POR DECIDIR | GDD, roadmap, V1 y fecha de lanzamiento. | Redactar tras visión artística/audio y revisar juntos. |
+
+## Registro de cambios
+
+- **2026-10-18 — Captura inicial:** tras explicaciones de mecánicas, prioridad Game-first, propuesta de iniciativa híbrida y texto de campaña. Sin implementar sistemas ni aprobar fórmulas; siguiente sesión: dirección artística y audiovisual.
+
+### Regla futura
+
+Para cerrar un asunto, crear nueva fila de cambio con fecha, decisión, justificación, coste/impacto y enlace al GDD o experimento; no sobrescribir silenciosamente la visión histórica.
+
+### Repositorio y privacidad
+
+Este repositorio se verificó como **público** el 2026-10-18. La documentación puede incluir detalles inéditos de ambientación e historia; antes de incorporar spoilers sensibles o propiedad intelectual no publicable, reconsiderar visibilidad. Nunca almacenar API keys.
