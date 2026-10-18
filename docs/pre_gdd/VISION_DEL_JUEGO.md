@@ -12,14 +12,14 @@ La intención no es crear un clon ni adoptar obligatoriamente todas las reglas d
 ## Plataformas y formato
 
 - **PC y consolas** como objetivos. Android/móvil **queda fuera** de esta nueva visión.
-- **Mundo táctico con geometría 3D y arte 2D anime**, vista isométrica/ortográfica como candidato principal a validar con arte de calidad real.
+- **Mundo táctico de geometría 3D mínima para XYZ, elevación y cámara isométrica libre**, con personajes y arte predominantemente 2D anime ilustrado (ART-006/008). Viabilidad en prototipo aún por validar.
 - Unidades en casillas con coordenadas X, Y, Z y elevación; orientación y oclusión deben resultar coherentes al girar cámara.
-- El combate puede representarse con **escena lateral 2D anime** y transición/zoom, activable o desactivable; si se omite, las acciones se animan de forma básica sobre el mapa.
+- **Combate lateral 2D anime con personajes completos estilo Fire Emblem**, fondos 2D con parallax suave y VFX vistosos/legibles; representación opcional/desactivable, sustituyendo por animaciones básicas sobre el mapa (ART-009/010/011).
 - Mapas pequeños, medianos y grandes con la misma lógica subyacente; minimapa y medidas de visibilidad/rendimiento (culling, streaming o representaciones simplificadas) conforme a pruebas reales.
 
 ## Modos de juego planteados
 
-1. **Campaña individual:** capítulos, escenas de diálogo estilo novela visual y/o sobre mapa renderizado, decisiones y ramificaciones importantes; despliegue de unidades, progreso entre batallas, consecuencias e historia.
+1. **Campaña individual:** capítulos, **retratos de busto tipo Fire Emblem** y presentación híbrida (fondos ilustrados 2D en escenas narrativas; diálogo sobre mapa 3D durante batallas), decisiones, despliegue, progreso, consecuencias e historia (ART-013/014).
 2. **Refriega 1–4 jugadores:** mapas PvP, PvE o cooperativos según configuración; equipos de unidades únicas, genéricas o mixtos, edificios de captura/reclutamiento y eventualmente economía dentro de la batalla.
 3. **Supervivencia/expedición cooperativa (modo separado):** 1–4 jugadores o uno solo controlando su equipo, crear unidad/grupo, explorar una mazmorra estilo aventura D&D/roguelike y sobrevivir el mayor tiempo posible. Visión aspiracional, no alcance cerrado para V1.
 
@@ -47,6 +47,13 @@ La infraestructura de juego cooperativo/competitivo para jugadores humanos debe 
 - Se ha mencionado previamente un presupuesto disponible de **250 € para exploración de IA/artes visuales**, no un presupuesto de producción total ni una compra realizada. No asignar gasto sin acuerdo.
 - Evitar confundir arte generado con assets técnicos listos para Godot; rig, loops, UV, export 3D, transparencia, animación y timing requieren validación.
 - El test central del prototipo 3D será **si la dirección artística funciona** en zoom, rotación de cámara, mapa grande/pequeño y escenarios con elevaciones, no solamente si el motor dibuja unos cubos.
+
+## Acuerdos audiovisuales adicionales
+
+- **Interfaz limpia con toques artísticos propios** (ART-012).
+- **Banda sonora orquestal con identidad escandinava**, predominantemente instrumental y con coros cuando proceda; leitmotivs y versiones normal/attack (ART-015/016).
+- **Doblaje parcial en inglés** y **textos, menús y subtítulos en español e inglés** (ART-017/018/019).
+- Ver [síntesis consolidada](ESTADO_CONSOLIDADO_2026-10-18.md) para todas las elecciones y cuestiones abiertas.
 
 ## Lo que esta visión NO decide todavía
 

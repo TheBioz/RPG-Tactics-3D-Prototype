@@ -64,7 +64,7 @@ El autor propone abandonar fases completas de ejército y explorar un **modelo d
 
 ## 7. Campaña y decisiones
 
-- Presentación estilo novela visual/Fire Emblem: escenas de diálogo, quizá escenas en mapas renderizados, elección, entrada al capítulo y desenlaces de misión.
+- Presentación narrativa confirmada en ART-013/014: **retratos de busto**, fondos narrativos ilustrados 2D y conversaciones sobre el mapa 3D durante batallas; elección, capítulos y desenlaces, con layout/transiciones todavía abiertos.
 - No incluir minijuegos obligatorios, simuladores de base o tareas ajenas a las batallas.
 - Decisiones **sustantivas**: salvar o no a un neutral, escoger un objetivo frente a otro, asegurar una región a costa de perder otra, etc. Consecuencias en capítulos, personajes, mapas y sucesos.
 - Ramificaciones que converjan hacia unos **tres finales como máximo** (cifra tentativa), evitando producir incontables campañas incompatibles.
@@ -74,7 +74,7 @@ El autor propone abandonar fases completas de ejército y explorar un **modelo d
 
 - Geometría 3D, cuadrícula lógica, alturas reales y vista táctica isométrica para PC y consolas.
 - Deben poder mostrarse muchos actores, assets altos, props que oculten casillas y escaleras/murallas sin perder selección ni lectura.
-- Posibilidad de cámara rotatoria/zoom y facings 2D según el cuadrante, a confirmar visualmente.
+- **Cámara libre rotatoria/zoom, sprites 2D con billboard corregido** (ART-006/008), sin límite obligatorio a cuadrantes; facing lógico, pivote, sombras y oclusión pendientes de pruebas.
 - **Minimapa** para lectura y navegación en mapas grandes.
 - Frustum culling, LOD, chunks o streaming como estrategias candidatas para evitar procesar/renderizar todo lo lejano; probar coste real y no confundir ahorro de dibujo con ahorro de memoria.
 - Elevación, vuelos y obstáculos deben tener reglas independientes del modelo gráfico.

@@ -1,11 +1,11 @@
-# Dirección artística y audiovisual — tema para continuar
+# Dirección artística y audiovisual — elecciones pre-GDD
 
-**Estado:** dirección de personajes **aprobada como objetivo visual pre-GDD el 2026-10-18**; aspectos técnicos y coherencia visual aún pendientes de prototipo. No es todavía una biblia de arte final ni una prueba de viabilidad.
+**Estado:** decisiones de arte, presentación, música, voces y localización **ART-001…ART-019 aprobadas como visión pre-GDD el 2026-10-18**; coherencia, coste y técnica aún pendientes de prototipo. No es todavía una biblia de arte final ni una prueba de viabilidad.
 
 ## Requisitos actualmente expresados
 
 - **Entorno táctico 3D** con proyección isométrica y alturas reales; cuadrícula reconocible pero mundo creíble al rotar y cambiar de zoom.
-- **Gráficos/actores 2D anime** sobre el escenario 3D como dirección inicial deseada; comparativa con personajes 3D estilizados solo como experimento artístico y técnico.
+- **Actores 2D anime** sobre entorno 3D funcional como dirección explícita; minimizar el uso de modelos 3D (ART-006/008). Comparación 3D solo si surgiera un problema técnico, no como dirección principal.
 - **Presentación de combate lateral 2D anime** con transición/zoom opcional y acciones básicas en mapa cuando esté desactivada.
 - **Variedad cultural y fantasía general**: ambientación post-Ragnarök con raíz nórdica, no todo de estética vikinga.
 - **PC y consolas**: diseño visual, controles, legibilidad y rendimiento para estos dispositivos, no Android.
@@ -184,6 +184,12 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 
 **Pendiente:** variante regional del español e inglés, idioma de redacción maestro, procedimiento de traducción y revisión, selección automática del idioma del sistema, formato exacto de subtítulos y criterios de QA. Esta es una decisión de intención de producto pre-GDD, no una afirmación de que la localización ya esté implementada.
 
+## Nota de concordancia de decisiones posteriores (2026-10-18)
+
+Las descripciones anteriores registran el orden histórico de la conversación. Cuando un apartado antiguo enumere una opción como abierta, consultar el acuerdo posterior: **ART-008** fija 3D mínimo y actores 2D, **ART-014** define fondos híbridos de conversación, **ART-016** define instrumental/coros según el momento, **ART-017/018** resuelven doblaje parcial en inglés y **ART-019** resuelve localización escrita en español e inglés. Permanecen abiertas las **técnicas concretas**, herramientas y parámetros de producción, no estas elecciones estéticas.
+
+Ver [síntesis completa](ESTADO_CONSOLIDADO_2026-10-18.md).
+
 ## Agenda sugerida, NO elecciones predeterminadas
 
 1. Estilo global: anime 2D ilustrado, línea, paleta, saturación, sombreado y referencias visuales.
@@ -196,4 +202,4 @@ Cuánta música coral/vocal frente a instrumental; si existen canciones con letr
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Decisiones ART-001 a ART-019 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
+**Decisiones ART-001 a ART-019 registradas como visión pre-GDD**. Billboard corregido, parallax, VFX, voces, música dinámica y producción siguen por validar; siguiente tema: **pipeline IA de personajes**, antes del GDD/roadmap.

@@ -11,7 +11,8 @@ Proyecto experimental de RPG táctico por turnos. Dirección en estudio: mapas c
 - [Mecánicas y modos](docs/pre_gdd/MECANICAS_Y_MODOS.md).
 - [Narrativa y elenco](docs/pre_gdd/NARRATIVA_Y_PERSONAJES.md).
 - [Decisiones abiertas](docs/pre_gdd/DECISIONES_ABIERTAS.md).
-- [Dirección artística y audiovisual — conversación pendiente](docs/pre_gdd/DIRECCION_ARTISTICA_AUDIOVISUAL.md).
+- [Dirección artística y audiovisual — ART-001…ART-019](docs/pre_gdd/DIRECCION_ARTISTICA_AUDIOVISUAL.md).
+- **[Síntesis consolidada de la visión y acuerdos](docs/pre_gdd/ESTADO_CONSOLIDADO_2026-10-18.md)**.
 
 El texto original aportado por el usuario sobre iniciativa y narrativa se conserva en [fuentes](docs/pre_gdd/fuentes/2026-10-18_iniciativa_y_narrativa_original.md).
 

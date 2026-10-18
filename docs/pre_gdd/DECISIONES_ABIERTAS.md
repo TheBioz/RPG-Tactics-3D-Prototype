@@ -5,7 +5,7 @@
 | ID | Estado | Tema / constatación | Qué falta decidir |
 | --- | --- | --- | --- |
 | PRE-001 | VISIÓN EXPRESA | RPG táctico de cuadrícula que fusiona héroes tipo FE con control territorial tipo AW y variedad táctica/estado tipo FFT/BG3. | Reglas originales y límites de complejidad. |
-| PRE-002 | PREFERENCIA CON PRUEBA | Escenarios 3D isométricos con arte 2D anime, elevación, zoom/rotación. | Calidad en el prototipo artístico; sprite 2D vs 3D cel shading en mapa. |
+| PRE-002 | DIRECCIÓN VISUAL POR VALIDAR | **Geometría 3D mínima XYZ/cámara libre**, actores anime **2D con billboard corregido** (ART-006/008). | Coherencia a distintos ángulos, zoom, alturas, oclusión, sombras, pivotes. |
 | PRE-003 | VISIÓN EXPRESA | PC/consolas, no Android. | Plataformas prioritarias, hardware mínimo y presupuesto de rendimiento. |
 | PRE-004 | VISIÓN EXPRESA | Campaña individual + refriegas de 1–4 jugadores competitivas o cooperativas. | Online/local, sincronización, reglas de alianzas y fase de lanzamiento. |
 | PRE-005 | VISIÓN FUTURA | Modo separado de supervivencia/mazmorra/roguelike co-op o en solitario con equipo. | Proceduralidad, persistencia, expediciones y fase de desarrollo. |
@@ -59,6 +59,8 @@
 | ART-019 | DIRECCIÓN APROBADA PRE-GDD | **Español e inglés** como idiomas iniciales de textos, menús, HUD y subtítulos; voces parciales solo en inglés. | Variante regional, glosarios, QA, pipeline de traducción y UX multilingüe. |
 
 ## Registro de cambios
+
+- **2026-10-18 — Consolidación completa:** [ESTADO_CONSOLIDADO_2026-10-18.md](ESTADO_CONSOLIDADO_2026-10-18.md) reúne visión y ART-001…ART-019; índice/visión/mecánicas reflejan las elecciones posteriores. Se aclara la sustitución de la comparación 2D/3D por el objetivo de actores 2D con 3D mínimo; sigue pendiente su demostración técnica. No se aprueban GDD, PoC, roadmap ni pipeline IA.
 
 - **2026-10-18 — Localización escrita:** ART-019. El autor confirma textos, menús e interfaz/subtítulos en inglés y español desde el inicio; el audio permanece en inglés. Idiomas adicionales no acordados.
 - **2026-10-18 — Idioma del doblaje:** ART-018. El autor elige inglés para las voces parciales; idiomas de textos y subtítulos independientes y aún pendientes de decidir.
