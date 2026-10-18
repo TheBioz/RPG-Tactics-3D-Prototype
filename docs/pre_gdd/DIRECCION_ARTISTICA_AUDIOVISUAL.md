@@ -111,6 +111,14 @@ El autor elige **retratos anime de busto al estilo Fire Emblem** para conversaci
 
 **No decidido:** cantidad de expresiones, fondos de diálogo ilustrados o mapa 3D como fondo, posicionamiento exacto de retratos, animación de boca/ojos, doblaje, dimensiones y transiciones.
 
+## ART-014 — Sistema híbrido de diálogos (confirmado el 2026-10-18)
+
+El autor confirma la **opción C**: **fondos ilustrados 2D** para escenas narrativas y **diálogos superpuestos sobre el mapa táctico 3D** durante batallas o situaciones integradas en el gameplay.
+
+Los retratos de busto anime estilo Fire Emblem (**ART-013**) y la interfaz limpia con identidad gráfica (**ART-012**) se mantienen en ambas modalidades. Los fondos narrativos serán ilustrados, no escenas tridimensionales complejas.
+
+**Pendiente de definir:** cuándo alternar ambas presentaciones, si hay transiciones, efectos, animación de retratos y gestión de la cámara del mapa durante los diálogos. La elección no valida todavía costes ni implementación.
+
 ## Agenda sugerida, NO elecciones predeterminadas
 
 1. Estilo global: anime 2D ilustrado, línea, paleta, saturación, sombreado y referencias visuales.
@@ -123,4 +131,4 @@ El autor elige **retratos anime de busto al estilo Fire Emblem** para conversaci
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Decisiones ART-001 a ART-013 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
+**Decisiones ART-001 a ART-014 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
