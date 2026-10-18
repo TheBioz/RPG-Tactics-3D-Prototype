@@ -60,6 +60,8 @@
 
 ## Registro de cambios
 
+- **2026-10-18 — Primer concept visual PC-001, C0 candidato 01:** se genera una hoja de cuerpo entero + busto + espalda y se documenta [revisión C0](personajes/PC-001_C0_REVISION_CANDIDATO_01.md). El diseño parece coherente, pero hay ornamentos/capa/pelo que simplificar; faltan perfil y aprobación visual del autor. **No aprobar C0 automáticamente ni considerar asset usable**.
+
 - **2026-10-18 — Diseño piloto PC-001 (propuesta de I+D, NO nuevo canon ART):** preparada la ficha [PC-001 Vanguard Lancer — Character Master v0.1](personajes/PC-001_VANGUARD_LANCER_CHARACTER_MASTER_v0.1.md). Adapta Golden Character del RTM AI Art Factory anterior a actor 2D/cámara libre y combate lateral completo; deja explícitamente pendientes master visual, costes, herramienta, resoluciones y validación Godot. No sustituye ni modifica ART-001…ART-019.
 
 - **2026-10-18 — Consolidación completa:** [ESTADO_CONSOLIDADO_2026-10-18.md](ESTADO_CONSOLIDADO_2026-10-18.md) reúne visión y ART-001…ART-019; índice/visión/mecánicas reflejan las elecciones posteriores. Se aclara la sustitución de la comparación 2D/3D por el objetivo de actores 2D con 3D mínimo; sigue pendiente su demostración técnica. No se aprueban GDD, PoC, roadmap ni pipeline IA.

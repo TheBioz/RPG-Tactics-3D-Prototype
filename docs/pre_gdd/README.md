@@ -19,6 +19,8 @@
 
 - **[PC-001 — Vanguard Lancer: Character Master v0.1](personajes/PC-001_VANGUARD_LANCER_CHARACTER_MASTER_v0.1.md)** — personaje piloto **no canónico**. Ficha de identidad, asimetrías, contratos de retrato/mapa/combate, gates de QA y prompt candidato E0. Adaptación de RTM AI Art Factory v0.1 al proyecto con personajes 2D y mapa XYZ. **Todavía sin ilustración maestra aprobada**.
 
+- [Revisión C0 — PC-001 candidato visual 01](personajes/PC-001_C0_REVISION_CANDIDATO_01.md) — evaluación del primer concept generado, problemas para animación, propuestas de simplificación y aprobación visual pendiente. **No canon final**.
+
 ## Origen y jerarquía de la información
 
 - Mensaje del autor del 2026-10-18 sobre mecánicas, modos, tecnología y objetivos.

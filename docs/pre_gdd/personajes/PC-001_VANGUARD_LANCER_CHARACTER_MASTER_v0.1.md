@@ -128,6 +128,10 @@ Texto operativo en inglés para probar generación de la **primera ilustración 
 
 **Revisar/evitar:** inversión izquierda/derecha, dos lanzas/escudos, hombreras o símbolos distintos en cada vista, anatomía defectuosa, capa tapando silueta, microdetalle excesivo, pelo inconsistente, diseño copiado de franquicias, pixel art, hiperrealismo, texturas fotográficas, texto generado. **Un prompt no garantiza estas condiciones**: solo evaluación visual y revisión humana.
 
+## Evaluación del primer concept generado (C0 candidato 01)
+
+El 2026-10-18 se generó una hoja de concepto compuesta, examinada en [la revisión visual C0 del candidato 01](PC-001_C0_REVISION_CANDIDATO_01.md). **Resultado: prometedor, pero NO aprobado como canon**. El equipo y la identidad parecen coherentes, pero el detalle de armadura/capa requiere evaluación de simplificación; faltan vista lateral y prueba de animación; la imagen es PNG RGB sin transparencia. El autor debe confirmar si mantiene este diseño como referencia para la siguiente iteración.
+
 ## 8. Estado de aprobación
 
 - **Aprobado como dirección general del videojuego:** ART-001…ART-019.
