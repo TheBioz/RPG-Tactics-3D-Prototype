@@ -84,6 +84,25 @@ El autor ha concretado las siguientes decisiones después de seleccionar el esti
 4. Evaluar material generado por IA por coherencia entre frames, transparencia, siluetas, licencias y tiempo de corrección; el parallax exige capas limpias, no basta un único JPG plano.
 5. Pendiente: contenido exacto y sistema de VFX, música sincronizada, rig/frames, interfaz y estilo de retratos. Ninguna de estas decisiones establece producción validada o coste final.
 
+## Dirección UI/HUD — decisión del autor (2026-10-18)
+
+**ART-012 — Dirección aprobada como visión pre-GDD:** interfaz **predominantemente limpia, clara y funcional**, con **algunos detalles artísticos característicos** que aporten una identidad reconocible al juego. No quiere una UI recargada ni una interfaz tan genérica que parezca una plantilla sin personalidad.
+
+**Principio rector:** la ornamentación comunica el mundo, pero **nunca debe competir con la información táctica**.
+
+### Implicaciones prácticas propuestas (no estilo final aprobado)
+
+- **Mapa táctico:** HUD discreto, jerarquía clara para fase/ventana de activación, unidad seleccionada, alcance/movimiento, terreno y altura, objetivos, propiedades, recursos cuando correspondan, minimapa y estado de equipos; información contextual en vez de paneles permanentes excesivos.
+- **Combate lateral:** mostrar HP, ataques, previsiones/resultados y otros datos imprescindibles sin ocultar sprites completos ni VFX. Mantener nitidez en pantallas de PC/TV.
+- **Menús, fichas y diálogos:** mayor margen para identidad gráfica: divisores, pequeños grabados, símbolos, marcos finos, transiciones suaves y motivos asociados al lore/culturas.
+- **Posibles firmas visuales a explorar, NO aprobadas:** trazos inspirados en ramas de Yggdrasil, nudos geométricos, runas reinterpretadas con diseño original y destellos/paleta evocadores del Bifröst. Evitar convertir todo en estética vikinga; adaptar variantes discretas a las culturas del mundo.
+- **UX:** foco y selección inequívocos con mando, ratón y teclado; contrastes suficientes, escalado para pantallas grandes y pequeñas, y distinguir facciones mediante iconos/formas además del color.
+- **Pipeline IA:** permitir generación de motivos ornamentales/fondos/UI ilustrados, pero construir texto, iconografía mecánica, botones y paneles con elementos escalables/consistentes; no usar texto dibujado por modelos generativos como UI funcional.
+
+### No decidido todavía
+
+Paleta exacta, tipografías, iconografía, marco/nudo/runa concreto, densidad de HUD, posición de minimapa, layout para 4 jugadores, presentación del orden de activación, diagramas de rangos/altura, estilo de ventanas de diálogo, menú principal, escalas/resoluciones y guía de interacción. Validar con una **captura funcional de batalla de mapa pequeño y grande** antes de fijar la biblia UI.
+
 ## Agenda sugerida, NO elecciones predeterminadas
 
 1. Estilo global: anime 2D ilustrado, línea, paleta, saturación, sombreado y referencias visuales.
@@ -96,4 +115,4 @@ El autor ha concretado las siguientes decisiones después de seleccionar el esti
 8. Pipeline IA: generación con referencias canónicas, máscaras, modelado texturizado, música, métricas, costes y licencias.
 9. Quality gate: pequeña escena 3D con varias rotaciones, mapa grande y pequeño, retrato y actor anime; comparar 2D vs 3D solo si es necesario.
 
-**Decisiones ART-001 a ART-011 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar en prototipo. Continuar con interfaz/HUD, retratos y pipeline audiovisual antes del GDD/roadmap.
+**Decisiones ART-001 a ART-012 registradas como visión pre-GDD**; técnica de billboard corregido, parallax y VFX aún por validar. Continuar con retratos/diálogos, detalles UI y pipeline audiovisual antes del GDD/roadmap.
