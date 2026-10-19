@@ -1,0 +1,11 @@
+--- a/scripts/isometric_art_test.gd
++++ b/scripts/isometric_art_test.gd
+@@ -153,7 +153,7 @@ func _spawn_sprite(tex: Texture2D, x: int, z: int, height: float, pixel: float) -> Sprite3D:
+ 	var s := Sprite3D.new()
+ 	s.texture = tex
+ 	s.pixel_size = pixel
+-	s.billboard = SpriteBase3D.BILLBOARD_FIXED_Y
++	s.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+ 	s.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ 	s.shaded = false
+ 	s.double_sided = true
