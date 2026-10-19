@@ -118,6 +118,7 @@ jobs:
 
           Invoke-GodotCheck -Name 'version' -Arguments @('--version') -ExpectedVersion '4.7.2.stable'
           Invoke-GodotCheck -Name 'import' -Arguments @('--headless','--path','.','--import')
+          Invoke-GodotCheck -Name 'grid-tests' -Arguments @('--headless','--path','.','--script','res://tests/r2/test_runner.gd')
           Invoke-GodotCheck -Name 'smoke' -Arguments @('--headless','--path','.','--quit-after','10')
 
       - name: Upload Godot logs
