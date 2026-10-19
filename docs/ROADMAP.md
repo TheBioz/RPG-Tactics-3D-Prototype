@@ -70,6 +70,7 @@
 - [ ] **R0-04** Crear convención de datos/IDs y mínimos de tests automatizados o ejecutables headless para reglas, sin atar lógica al render.
 - [ ] **R0-05** Establecer el registro de decisiones de diseño: `propuesto` / `aprobado` / `probado` / `descartado`, fechas, responsables y link a evidencias.
 - [ ] **R0-06** Revisar licencias y procedencia del primer lote de assets antes de cualquier distribución pública.
+- [ ] **R0-07** Formalizar una política de **revisión de cada PR, revisión intermedia de ramas largas y auditoría arquitectónica periódica** al cerrar cada milestone o tras dos PRs de código; registrar dependencias, deuda, estado autoritativo, regresiones y riesgos en `docs/engineering/audits/`. Preparar CI headless tras verificar/pinear versión Godot. Ver [Workflow](engineering/WORKFLOW.md) y [plantilla de auditoría](engineering/ARCHITECTURE_AUDIT_TEMPLATE.md).
 
 ### Gate R0
 
@@ -119,6 +120,7 @@
 - [ ] **R2-06** Billboard corregido con pivote de pies, contacto, sombra y oclusiones frente a rocas/muros/escaleras; test 360° de yaw según límites que se aprueben.
 - [ ] **R2-07** HUD de selección, alcance/altura y minimapa básico si aporta legibilidad.
 - [ ] **R2-08** Prueba de rendimiento para escenario pequeño y carga de unidades, registrando hardware, versión y frame time. No optimizar prematuramente una batalla «masiva» teórica.
+- [ ] **R2-09** Importar y versionar el PoC isométrico que antes vivía solo en ZIP; refactorizar responsabilidades; ensayar **ISO_FULL / ISO_HYBRID / TOPDOWN** a distintos pitch con histéresis y fallbacks, preservando selección y estado de la cuadrícula. Umbrales y dirección artística en prueba, no aprobados. Véanse [ADR-0001](engineering/adr/ADR-0001-pitch-presentation.md), [diagnóstico previo de OpenCode R2 (archivado)](prompts/opencode/R2_CAMERA_PRESENTATION.md) y [prompt separado para PR A (baseline)](prompts/opencode/R2_BASELINE_PR_A.md). **Completar y revisar PR A antes de autorizar la conmutación en PR B.**
 
 ### Gate R2
 

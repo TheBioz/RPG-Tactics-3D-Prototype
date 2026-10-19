@@ -22,6 +22,22 @@ Proyecto experimental de RPG táctico por turnos. Dirección en estudio: mapas c
 
 El texto original aportado por el usuario sobre iniciativa y narrativa se conserva en [fuentes](docs/pre_gdd/fuentes/2026-10-18_iniciativa_y_narrativa_original.md).
 
+
+## Desarrollo con OpenCode y revisiones
+
+**GitHub es la fuente de verdad; OpenCode escribe y prueba el código; desde ChatGPT se preparan prompts, se revisan diffs/PRs y se asesora en diseño y arquitectura.** No considerar un ZIP de conversación como código versionado.
+
+- [Instrucciones de OpenCode / AGENTS](AGENTS.md)
+- [Arquitectura y límites de módulos](docs/engineering/ARCHITECTURE.md)
+- [Ramas y proceso de revisión](docs/engineering/WORKFLOW.md)
+- [Checklist de code review](docs/engineering/REVIEW_CHECKLIST.md)
+- [ADR: presentación según inclinación de cámara](docs/engineering/adr/ADR-0001-pitch-presentation.md)
+- [Prompt R2 — diagnóstico histórico ya completado](docs/prompts/opencode/R2_CAMERA_PRESENTATION.md)
+- [Prompt R2 — PR A, baseline Godot; requiere aprobación posterior](docs/prompts/opencode/R2_BASELINE_PR_A.md)
+- [Estado de integración](docs/engineering/STATUS.md)
+
+**Nada se fusiona a main sin PR y revisión**, y los hitos largos incluyen revisión a mitad de rama.
+
 ## Repositorios y entorno
 
 - Este repositorio es independiente del anterior [RPG-Tactics-Maker](https://github.com/TheBioz/RPG-Tactics-Maker).

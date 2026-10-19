@@ -58,6 +58,7 @@ La principal diferenciación sistémica es un **planificador de activaciones pro
 
 - **Cámara libre rotatoria** de orientación isométrica/táctica, zoom legible, selección de casillas y unidades, ayudas de elevación, rutas y rangos.
 - **Billboard corregido** para sprites 2D: mantener pies/grounding, coherencia de mano/arma/escudo y oclusión frente a muros, sombras y objetos, con rotación/zoom reales.
+- **Nueva observación del PoC (2026-10-19):** al inclinar la cámara hacia cenital, los sprites verticales y props altos pierden coherencia. **DISEÑO PROPUESTO, aún no validado:** modos visuales por pitch (isométrico, híbrido, cenital táctico) con transición e histéresis, sin modificar reglas ni posición de las unidades. Véase [ADR-0001](engineering/adr/ADR-0001-pitch-presentation.md); parámetros y arte de cada modo siguen abiertos.
 - Minimap y ayudas visuales especialmente para escenarios grandes.
 - Estrategias futuras como frustum culling, LOD, chunks y streaming se seleccionarán por perfilado real, sin fingir tamaños máximos o FPS objetivo ya medidos.
 
