@@ -22,6 +22,21 @@
 - Arte: marcar proxy como PROXY, masters y derechos verificados antes de asset comercial.
 - Rendimiento: comparativas con hardware y métricas si el PR declara mejoras.
 
+## Auditorías periódicas de mantenimiento
+
+**Cadencia obligatoria, adicional al review de toda PR:** revisar arquitectura al **cierre de cada milestone** o **cada 2 PRs de código fusionadas dentro de un milestone**, lo que suceda antes. En ramas largas, efectuar una revisión intermedia antes de esos límites. En features de gameplay o datos, auditar antes si se detectan duplicaciones, código monolítico, fallos de reglas o dependencias nuevas.
+
+**Proceso:**
+1. Registrar en `docs/engineering/audits/` un archivo por auditoría siguiendo [la plantilla](ARCHITECTURE_AUDIT_TEMPLATE.md), en el PR de cierre del hito o un PR específico de mantenimiento. Guardar versiones, commit base y evidencia.
+2. Revisar fronteras entre módulos, flujo de estado y señales, complejidad creciente, funciones de responsabilidad mixta, duplicación, seguridad/integridad, pruebas negativas y regresiones.
+3. Clasificar hallazgos como BLOCKER / MAJOR / MINOR / SUGGESTION. **BLOCKER/MAJOR bloquean la siguiente integración afectada**; MINOR puede incorporarse a backlog con hito y justificación. Nunca reescribir masivamente sin plan.
+4. Rechazar abstracción especulativa: preferir cambios pequeños que reduzcan acoplamiento sin inventar frameworks. Un archivo largo no es un fallo por sí mismo; se revisa cohesión y dependencia.
+5. Una auditoría no sustituye la review de cada PR. Cada refactor incluye tests de comportamiento conservado, y los tests realmente ejecutados se distinguen de los pendientes.
+
+**CI y ramas:** automatizar importación Godot headless y tests en GitHub Actions **una vez que se verifique y fije una versión de Godot reproducible**. Para PRs con código/escenas, si no hay editor ejecutable ni evidencia equivalente verificable, gate técnico PENDING y **no merge sin resolverlo o excepción de pruebas acordada expresamente**. Las PRs exclusivamente de documentación no requieren ejecutar Godot si se verifica ese alcance.
+
+**Godot/Git:** mantener un solo `project.godot` en la raíz; `.godot/` y `*.translation` deben ignorarse sin borrar caché local. Conservar las fuentes y metadatos `*.import` y `*.uid` que determinan importación/identidad; no ignorarlos globalmente. Revisar `README.md` modificado y recursos sin seguimiento antes de aplicar staging.
+
 ## Gestión de revisión
 
 Review BLOCKER, MAJOR, MINOR, SUGGESTION; reportar archivo/línea, impacto y solución. Un milestone largo puede fraccionarse en PR A (import baseline) y PR B (presentation) para revisar antes de acumular deuda.

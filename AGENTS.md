@@ -19,6 +19,15 @@
 11. Separar art_source y game assets aprobados; conservar identidad, hash, procedencia y licencia comercial. Sin copiar arte ajeno, sin secretos/tokens/datos privados en repo público.
 12. No portar código de RPG-Tactics-Maker por defecto: inspeccionar contratos y aprobar migraciones individualmente.
 
+## Revisión periódica de arquitectura (obligatoria)
+
+- **Toda PR de código:** diff y QA revisados antes del merge, incluidos refactors, bugs y scripts pequeños.
+- **Revisión intermedia:** al superar 5 archivos de código, unas 400 líneas, tres sesiones, o ante cualquier cambio de contrato crítico. Pausar y entregar diff; no esperar al final del hito.
+- **Auditoría de arquitectura periódica:** al cerrar **cada milestone** o tras **dos PRs de código fusionadas** dentro del mismo milestone, lo que ocurra primero. Evaluar dependencias, duplicación, estado autoritativo, scripts sobrecargados, eventos/señales, pruebas, fallos, exploits y deuda. Documento: [plantilla](docs/engineering/ARCHITECTURE_AUDIT_TEMPLATE.md).
+- **Bugs recurrentes o regresiones** activan auditoría anticipada del subsistema afectado; no esconderlos tras arreglos superficiales.
+- Registrar decisiones y deuda con severidad, responsable, PR de origen y fecha/hito previsto para resolver. **BLOCKER/MAJOR sin resolver impide fusionar** salvo decisión excepcional documentada y explícitamente aceptada por el autor (nunca para corrupción de estado, secretos, pérdida de datos o tests críticos fallidos).
+- Al programar en R2: **un solo proyecto Godot con `project.godot` en la raíz del repositorio**; no crear proyectos anidados. Versionar `*.import` y `*.uid` relevantes junto a sus fuentes, ignorar `.godot/` y artefactos generados sin borrarlos del equipo.
+
 ## Respuesta esperada al completar una tarea
 
 ID de hito, rama/commit/PR; archivos y contratos cambiados; qué queda fuera; tests ejecutados con evidencia; riesgos, casos límite y pendientes; Gate propuesto PASS/FAIL/PENDING; siguiente paso acotado. No autoproclamarse code-reviewed ni fusionar sin autorización.

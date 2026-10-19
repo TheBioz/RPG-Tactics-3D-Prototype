@@ -30,6 +30,12 @@ En Godot 3D: X/Z = plano de casillas; Y = elevación. Modelo lógico explícito 
 
 game/domain, game/application, game/adapters/godot, game/content, game/scenes, game/tests. Para el PoC previo usar experiments/iso_art_gate. Actualmente esta jerarquía **es una propuesta**, no código ya instalado.
 
+### Auditoría continuada de la arquitectura
+
+No basta con que una escena compile: tras cada milestone (o cada dos PRs de código dentro de uno), contrastar el grafo de dependencias real con este contrato. Revisar quién escribe el estado lógico, qué servicios comparten datos duplicados, acoplamientos por rutas de nodos, señales con mutaciones indirectas, tipos/errores, configuración centralizada y tests de regresión. Versionar resultados en `docs/engineering/audits/` usando [la plantilla](ARCHITECTURE_AUDIT_TEMPLATE.md). Priorizar refactors acotados por impacto; no añadir capas innecesarias para satisfacer un diagrama.
+
+Proyecto único: `project.godot` en la raíz actual `C:\Dev\RPG-Tactics-3D-Prototype`. El experimento isométrico existente es una escena del mismo proyecto; no introducir otro `project.godot` en subcarpetas. La ubicación definitiva de scripts/escenas sigue sujeta a la revisión de baseline PR A.
+
 ### Pruebas y cambios
 
 Tests puros sobre lógica y selección de presentación; smoke headless de escenas Godot; revisión visual de yaw/pitch/zoom/altura. Bug → test de regresión. Cambios de contrato requieren revisión/ADR, y refactors grandes no se mezclan con feats de gameplay sin necesidad. Optimizar solo tras perf medido.
