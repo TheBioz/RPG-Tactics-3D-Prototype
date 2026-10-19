@@ -47,8 +47,14 @@ En Settings / Branches / rulesets: PR obligatorio para main, bloquear push direc
 
 ## Directorio local único acordado
 
-**Ruta exclusiva de trabajo:** `C:\Dev\RPG-Tactics-3D-Prototype`. El autor ha reunido todos los materiales allí. OpenCode debe buscar, leer, desarrollar, probar y generar entregables únicamente bajo esa raíz. No solicitar ZIPs o carpetas externas si el material ya está presente. La presencia local de un ZIP/escena **no** implica que se haya versionado: inspeccionar `git status`, decidir la ubicación definitiva de fuentes en `experiments/` y preparar PR antes de mover o borrar nada. El script de referencia antiguo solo se importa con revisión y trazabilidad.
+**Ruta exclusiva de trabajo:** `C:\Dev\RPG-Tactics-3D-Prototype`. El autor ha reunido todos los materiales allí. OpenCode debe buscar, leer, desarrollar, probar y generar entregables únicamente bajo esa raíz. No solicitar ZIPs o carpetas externas si el material ya está presente. La presencia local de un ZIP/escena **no** implica que se haya versionado: inspeccionar `git status`, conservar el baseline inicialmente en sus rutas `scenes/`, `scripts/` y `art/` y preparar PR antes de mover o borrar nada. El script de referencia antiguo solo se importa con revisión y trazabilidad.
 
-## Estado actual de la prueba de cámara
+## Estado y próximos prompts para R2
 
-El paquete RTM_Isometric_Art_PoC_v0_2_billboard_fix.zip y/o su contenido **han sido colocados por el autor en la raíz local o sus subdirectorios**, pero su ruta exacta y estado Git se verificarán durante el diagnóstico. En GitHub, la rama poc/isometric-2d-art-gate solo tenía documentación y un parche en la última comprobación. OpenCode debe examinar fuentes locales antes de proponer importación a experiments/iso_art_gate, con revisión de licencias, sin copiar ciegamente a game/ ni al antiguo Maker.
+- [Diagnóstico R2](../prompts/opencode/R2_CAMERA_PRESENTATION.md): **fase de solo lectura ya completada**, conservada como antecedente histórico, no como instrucción permanente.
+- [PR A — Baseline Godot](../prompts/opencode/R2_BASELINE_PR_A.md): prompt **condicionado al merge autorizado de PR #1 y a una segunda autorización del autor para comenzar PR A**. Solo versionar y comprobar el único proyecto Godot existente, sin implementar modos adaptativos.
+- PR B — Presentación dependiente del pitch: **no autorizada**, se diseña después de la revisión de PR A.
+
+El autor comunicó que los materiales están dentro de `C:\Dev\RPG-Tactics-3D-Prototype`. OpenCode inspeccionó allí `project.godot`, `scenes/`, `scripts/`, `art/` y `.godot/` sin seguimiento Git y `README.md` modificado; no encontró el ZIP. **Es suficiente tomar la escena local como baseline provisional, sin afirmar equivalencia byte a byte con el ZIP.** El import debe respetar las rutas actuales hasta que haya razones para moverlas: *nunca un segundo project.godot*. Si una modificación de rama, merge o checkout afectara los cambios locales, detenerse y preparar preservación explícita antes de tocar nada.
+
+**Versión Godot por verificar:** OpenCode informó de `config/features = ["4.7", "GL Compatibility"]` en el proyecto local, pero no encontró un ejecutable Godot en `PATH` ni una variable `GODOT*`. La presencia de `4.7` **no demuestra** la versión del editor instalado ni compatibilidad con 4.2. Localizar un ejecutable real, registrar `--version` y fijar versión reproducible solo después de ejecutar pruebas; no modificar `config/features` por intuición.

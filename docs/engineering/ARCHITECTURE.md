@@ -28,7 +28,9 @@ En Godot 3D: X/Z = plano de casillas; Y = elevación. Modelo lógico explícito 
 
 ### Estructura prevista (crecer por necesidad)
 
-game/domain, game/application, game/adapters/godot, game/content, game/scenes, game/tests. Para el PoC previo usar experiments/iso_art_gate. Actualmente esta jerarquía **es una propuesta**, no código ya instalado.
+**Un único proyecto Godot:** `project.godot` permanece en la **raíz del repositorio**, sin `game/project.godot`, `experiments/**/project.godot` ni otros proyectos anidados. Conservar en PR A las rutas locales reales (`scenes/`, `scripts/`, `art/`, `docs/`) mientras se importa/versiona el baseline. Una prueba como `scenes/experiments/iso_art_gate/` puede organizar escenas y assets **dentro del mismo `res://`**, pero el traslado de rutas y referencias se discutirá antes de ejecutarlo.
+
+Solo cuando R2 u otros hitos requieran nuevos módulos, crear subcarpetas cohesionadas **en el único proyecto raíz** para cámara, presentación, dominio, aplicación, tests y contenido. No crear jerarquías vacías por cumplir un diagrama. La ubicación definitiva de los archivos existentes requiere revisar PR A y garantizar referencias `res://` válidas.
 
 ### Auditoría continuada de la arquitectura
 

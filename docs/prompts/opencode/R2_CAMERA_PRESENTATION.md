@@ -1,8 +1,12 @@
-# Prompt OpenCode R2 — Trabajar exclusivamente en el repositorio local
+# Prompt histórico — R2: diagnóstico y plan previos (YA COMPLETADO)
+
+> **ARCHIVADO COMO FASE DE ANÁLISIS.** OpenCode ya entregó el diagnóstico de R2 y el plan preliminar, que se revisaron con el autor. **No volver a ejecutar este prompt como encargo activo ni usar su bloqueo «solo diagnóstico» para detener trabajos que se autoricen expresamente después.**
+>
+> **Siguiente encargo separado:** [PR A — baseline de Godot](R2_BASELINE_PR_A.md). Ese prompt **solo podrá activarse después del merge aprobado de PR #1 y autorización expresa para PR A**. PR B (modos de pitch) requiere nueva autorización tras revisar PR A.
 
 **Ruta única del proyecto:** `C:\Dev\RPG-Tactics-3D-Prototype`. El autor ha indicado que ha colocado **todos los materiales en esa carpeta**. Toda inspección, documentación, implementación, pruebas, arte y entregables de este hito deben gestionarse **dentro de este árbol**, en subdirectorios apropiados. No exigir, crear, consultar ni asumir carpetas como `C:\Dev\RTM_Isometric_Art_PoC_v0_2_billboard_fix.zip` fuera del proyecto.
 
-**Modo actual: SOLO DIAGNÓSTICO Y PLAN.** No editar archivos, no crear ramas ni commits, no modificar el prototipo ni realizar merges hasta que el autor revise y autorice el plan.
+**Modo de este documento archivado: SOLO DIAGNÓSTICO Y PLAN.** Describe la fase previa ya realizada; no concede ni impide por sí mismo permisos de implementación para fases futuras.
 
 ## Referencias obligatorias
 
@@ -53,4 +57,4 @@ R2 — permitir cámara giratoria isométrica con zoom y alturas XYZ, y adaptar 
 - Review intermedio obligatorio si >5 archivos de código, ~400 líneas modificadas, >3 sesiones o cambios críticos. Review final de cada rama; resolver BLOCKER/MAJOR antes del merge.
 - PR descriptivo y checklist, merge solo tras aprobación explícita del autor.
 
-**Tu próxima respuesta debe ser exclusivamente el diagnóstico y plan de cinco apartados. No escribas código aún.**
+**Cierre histórico:** el diagnóstico y el plan de cinco apartados ya fueron entregados. No repetirlos como condición permanente: continuar solo mediante [el prompt de PR A](R2_BASELINE_PR_A.md), condicionado a aprobación explícita posterior, revisión de Git y preservación del árbol local.

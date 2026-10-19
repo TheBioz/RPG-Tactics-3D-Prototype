@@ -32,7 +32,8 @@ El texto original aportado por el usuario sobre iniciativa y narrativa se conser
 - [Ramas y proceso de revisión](docs/engineering/WORKFLOW.md)
 - [Checklist de code review](docs/engineering/REVIEW_CHECKLIST.md)
 - [ADR: presentación según inclinación de cámara](docs/engineering/adr/ADR-0001-pitch-presentation.md)
-- [Prompt R2 para OpenCode](docs/prompts/opencode/R2_CAMERA_PRESENTATION.md)
+- [Prompt R2 — diagnóstico histórico ya completado](docs/prompts/opencode/R2_CAMERA_PRESENTATION.md)
+- [Prompt R2 — PR A, baseline Godot; requiere aprobación posterior](docs/prompts/opencode/R2_BASELINE_PR_A.md)
 - [Estado de integración](docs/engineering/STATUS.md)
 
 **Nada se fusiona a main sin PR y revisión**, y los hitos largos incluyen revisión a mitad de rama.

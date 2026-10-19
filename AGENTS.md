@@ -28,6 +28,14 @@
 - Registrar decisiones y deuda con severidad, responsable, PR de origen y fecha/hito previsto para resolver. **BLOCKER/MAJOR sin resolver impide fusionar** salvo decisión excepcional documentada y explícitamente aceptada por el autor (nunca para corrupción de estado, secretos, pérdida de datos o tests críticos fallidos).
 - Al programar en R2: **un solo proyecto Godot con `project.godot` en la raíz del repositorio**; no crear proyectos anidados. Versionar `*.import` y `*.uid` relevantes junto a sus fuentes, ignorar `.godot/` y artefactos generados sin borrarlos del equipo.
 
+## Secuencia operativa del hito R2
+
+- El diagnóstico inicial de R2 [ya se realizó](docs/prompts/opencode/R2_CAMERA_PRESENTATION.md): ese documento es **histórico** y no debe reejecutarse como paso obligatorio indefinido.
+- El próximo prompt es [R2 PR A — baseline Godot](docs/prompts/opencode/R2_BASELINE_PR_A.md), que **no autoriza trabajo automáticamente**: se activa solo tras aprobación/merge de PR #1 y nueva autorización expresa del autor.
+- PR B de ISO_FULL / ISO_HYBRID / TOPDOWN está fuera del alcance de PR A y requerirá revisión y autorización propias.
+- Se trabaja con **un único `project.godot` en la raíz**; conservar rutas y cambios locales no versionados en PR A, sin crear otro proyecto Godot en `experiments/`.
+- El archivo local `project.godot` declara características `4.7`, pero no se ha comprobado el binario ejecutable. **Registrar versión real y resultado de importación**, no asumir compatibilidad ni cambiarla sin prueba.
+
 ## Respuesta esperada al completar una tarea
 
 ID de hito, rama/commit/PR; archivos y contratos cambiados; qué queda fuera; tests ejecutados con evidencia; riesgos, casos límite y pendientes; Gate propuesto PASS/FAIL/PENDING; siguiente paso acotado. No autoproclamarse code-reviewed ni fusionar sin autorización.
