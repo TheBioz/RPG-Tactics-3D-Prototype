@@ -1,0 +1,113 @@
+name: R2 baseline — Godot 4.7.2
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r2-baseline-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  godot-baseline:
+    name: Clean import and headless smoke
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR tree
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Verify clean checkout and download official Godot
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Set-Location $env:GITHUB_WORKSPACE
+
+          if (Test-Path '.godot') { throw 'Unexpected pre-existing .godot cache in fresh checkout.' }
+          if (Test-Path 'art/pc001_reference_character.png') { throw 'Private comparison PNG must not be present in CI checkout.' }
+          if (Test-Path 'art/pc001_reference_character.png.import') { throw 'Private comparison PNG import metadata must not be present in CI checkout.' }
+          "Pre-import .godot present: $([bool](Test-Path '.godot'))" | Tee-Object -FilePath "$env:RUNNER_TEMP\r2-baseline-setup.log"
+          "Private PNG present: $([bool](Test-Path 'art/pc001_reference_character.png'))" | Tee-Object -FilePath "$env:RUNNER_TEMP\r2-baseline-setup.log" -Append
+
+          $release = '4.7.2-stable'
+          $asset = 'Godot_v4.7.2-stable_win64.exe.zip'
+          $baseUrl = "https://github.com/godotengine/godot-builds/releases/download/$release"
+          $downloadDir = Join-Path $env:RUNNER_TEMP 'godot-r2'
+          New-Item -ItemType Directory -Path $downloadDir -Force | Out-Null
+          $archive = Join-Path $downloadDir $asset
+          $sumsPath = Join-Path $downloadDir 'SHA512-SUMS.txt'
+          Invoke-WebRequest -Uri "$baseUrl/$asset" -OutFile $archive
+          Invoke-WebRequest -Uri "$baseUrl/SHA512-SUMS.txt" -OutFile $sumsPath
+
+          $sumLine = Get-Content $sumsPath | Where-Object { $_ -match "\s+$([regex]::Escape($asset))$" } | Select-Object -First 1
+          if (-not $sumLine) { throw "Official SHA512-SUMS.txt has no entry for $asset." }
+          $expected = (($sumLine -split '\s+')[0]).ToLowerInvariant()
+          $actual = (Get-FileHash -Path $archive -Algorithm SHA512).Hash.ToLowerInvariant()
+          "Official asset: $baseUrl/$asset" | Tee-Object -FilePath "$env:RUNNER_TEMP\r2-baseline-setup.log" -Append
+          "Expected SHA512: $expected" | Tee-Object -FilePath "$env:RUNNER_TEMP\r2-baseline-setup.log" -Append
+          "Actual SHA512:   $actual" | Tee-Object -FilePath "$env:RUNNER_TEMP\r2-baseline-setup.log" -Append
+          if ($actual -ne $expected) { throw 'Godot archive SHA512 does not match the checksum published by the official release.' }
+
+          Expand-Archive -Path $archive -DestinationPath $downloadDir -Force
+          $godot = Join-Path $downloadDir 'Godot_v4.7.2-stable_win64_console.exe'
+          if (-not (Test-Path $godot)) { throw "Expected console executable missing from official archive: $godot" }
+          "Godot executable: $godot" | Tee-Object -FilePath "$env:RUNNER_TEMP\r2-baseline-setup.log" -Append
+
+      - name: Import and run headless smoke test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Set-Location $env:GITHUB_WORKSPACE
+          $godot = Join-Path $env:RUNNER_TEMP 'godot-r2/Godot_v4.7.2-stable_win64_console.exe'
+          $logDir = Join-Path $env:RUNNER_TEMP 'r2-baseline-logs'
+          New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+
+          function Invoke-GodotCheck {
+            param(
+              [Parameter(Mandatory=$true)][string]$Name,
+              [Parameter(Mandatory=$true)][string[]]$Arguments,
+              [Parameter(Mandatory=$true)][string]$ExpectedVersion = ''
+            )
+            $stdout = Join-Path $logDir "$Name.stdout.log"
+            $stderr = Join-Path $logDir "$Name.stderr.log"
+            $command = '"' + $godot + '" ' + ($Arguments -join ' ')
+            "COMMAND: $command" | Tee-Object -FilePath (Join-Path $logDir "$Name.meta.log")
+            $process = Start-Process -FilePath $godot -ArgumentList $Arguments -WorkingDirectory $env:GITHUB_WORKSPACE -NoNewWindow -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+            if (-not $process.WaitForExit(300000)) {
+              try { $process.Kill() } catch { }
+              "EXIT_CODE: TIMEOUT (300 seconds)" | Tee-Object -FilePath (Join-Path $logDir "$Name.meta.log") -Append
+              throw "$Name timed out after 300 seconds."
+            }
+            $process.WaitForExit()
+            $exitCode = $process.ExitCode
+            "EXIT_CODE: $exitCode" | Tee-Object -FilePath (Join-Path $logDir "$Name.meta.log") -Append
+            $output = @((Get-Content $stdout -ErrorAction SilentlyContinue) + (Get-Content $stderr -ErrorAction SilentlyContinue)) -join "`n"
+            if ($ExpectedVersion -and $output -notmatch [regex]::Escape($ExpectedVersion)) {
+              throw "Unexpected Godot version output. Expected $ExpectedVersion; see $stdout and $stderr."
+            }
+            if ($exitCode -ne 0) { throw "$Name returned exit code $exitCode. See captured logs." }
+            if ($output -match '(?im)^\s*(?:ERROR:|SCRIPT ERROR:|Parse Error:|Failed to load|Cannot open resource)') {
+              throw "$Name emitted an engine, script, parse, or resource-load error. See captured logs."
+            }
+          }
+
+          Invoke-GodotCheck -Name 'version' -Arguments @('--version') -ExpectedVersion '4.7.2.stable'
+          Invoke-GodotCheck -Name 'import' -Arguments @('--headless','--path','.','--import')
+          Invoke-GodotCheck -Name 'smoke' -Arguments @('--headless','--path','.','--quit-after','10')
+
+      - name: Upload Godot logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r2-baseline-godot-logs
+          path: |
+            ${{ runner.temp }}/r2-baseline-setup.log
+            ${{ runner.temp }}/r2-baseline-logs/*.log
+          if-no-files-found: warn
+          retention-days: 14
