@@ -70,6 +70,7 @@
 - [ ] **R0-04** Crear convención de datos/IDs y mínimos de tests automatizados o ejecutables headless para reglas, sin atar lógica al render.
 - [ ] **R0-05** Establecer el registro de decisiones de diseño: `propuesto` / `aprobado` / `probado` / `descartado`, fechas, responsables y link a evidencias.
 - [ ] **R0-06** Revisar licencias y procedencia del primer lote de assets antes de cualquier distribución pública.
+- [ ] **R0-07** Formalizar una política de **revisión de cada PR, revisión intermedia de ramas largas y auditoría arquitectónica periódica** al cerrar cada milestone o tras dos PRs de código; registrar dependencias, deuda, estado autoritativo, regresiones y riesgos en `docs/engineering/audits/`. Preparar CI headless tras verificar/pinear versión Godot. Ver [Workflow](engineering/WORKFLOW.md) y [plantilla de auditoría](engineering/ARCHITECTURE_AUDIT_TEMPLATE.md).
 
 ### Gate R0
 
