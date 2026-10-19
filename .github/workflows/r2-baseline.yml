@@ -72,22 +72,41 @@ jobs:
             param(
               [Parameter(Mandatory=$true)][string]$Name,
               [Parameter(Mandatory=$true)][string[]]$Arguments,
-              [Parameter(Mandatory=$true)][string]$ExpectedVersion = ''
+              [string]$ExpectedVersion = ''
             )
             $stdout = Join-Path $logDir "$Name.stdout.log"
             $stderr = Join-Path $logDir "$Name.stderr.log"
             $command = '"' + $godot + '" ' + ($Arguments -join ' ')
             "COMMAND: $command" | Tee-Object -FilePath (Join-Path $logDir "$Name.meta.log")
-            $process = Start-Process -FilePath $godot -ArgumentList $Arguments -WorkingDirectory $env:GITHUB_WORKSPACE -NoNewWindow -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+            $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+            $startInfo.FileName = $godot
+            $startInfo.WorkingDirectory = $env:GITHUB_WORKSPACE
+            $startInfo.UseShellExecute = $false
+            $startInfo.CreateNoWindow = $true
+            $startInfo.RedirectStandardOutput = $true
+            $startInfo.RedirectStandardError = $true
+            $startInfo.Arguments = $Arguments -join ' '
+            $process = [System.Diagnostics.Process]::new()
+            $process.StartInfo = $startInfo
+            if (-not $process.Start()) { throw "Could not start Godot for $Name." }
+            $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+            $stderrTask = $process.StandardError.ReadToEndAsync()
             if (-not $process.WaitForExit(300000)) {
               try { $process.Kill() } catch { }
+              $process.WaitForExit()
               "EXIT_CODE: TIMEOUT (300 seconds)" | Tee-Object -FilePath (Join-Path $logDir "$Name.meta.log") -Append
+              [System.IO.File]::WriteAllText($stdout, $stdoutTask.GetAwaiter().GetResult())
+              [System.IO.File]::WriteAllText($stderr, $stderrTask.GetAwaiter().GetResult())
               throw "$Name timed out after 300 seconds."
             }
             $process.WaitForExit()
             $exitCode = $process.ExitCode
             "EXIT_CODE: $exitCode" | Tee-Object -FilePath (Join-Path $logDir "$Name.meta.log") -Append
-            $output = @((Get-Content $stdout -ErrorAction SilentlyContinue) + (Get-Content $stderr -ErrorAction SilentlyContinue)) -join "`n"
+            $stdoutOutput = $stdoutTask.GetAwaiter().GetResult()
+            $stderrOutput = $stderrTask.GetAwaiter().GetResult()
+            [System.IO.File]::WriteAllText($stdout, $stdoutOutput)
+            [System.IO.File]::WriteAllText($stderr, $stderrOutput)
+            $output = $stdoutOutput + "`n" + $stderrOutput
             if ($ExpectedVersion -and $output -notmatch [regex]::Escape($ExpectedVersion)) {
               throw "Unexpected Godot version output. Expected $ExpectedVersion; see $stdout and $stderr."
             }
