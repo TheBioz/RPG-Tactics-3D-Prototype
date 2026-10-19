@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="550" viewBox="0 0 512 550"><defs>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e3e1d5"/><stop offset=".45" stop-color="#8199a6"/><stop offset="1" stop-color="#4a6379"/></linearGradient>
+<linearGradient id="cape" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a34452"/><stop offset="1" stop-color="#612e45"/></linearGradient>
+</defs>
+<!-- cape -->
+<path d="M202 173Q124 206 81 350Q78 411 38 461Q163 439 225 367L320 434Q299 300 270 171Z" fill="url(#cape)" stroke="#53394b" stroke-width="7"/>
+<path d="M179 209Q120 332 89 424M272 245Q295 357 318 402" fill="none" stroke="#c77576" stroke-width="9" opacity=".55"/>
+<!-- far boots/legs -->
+<path d="M202 356L197 463L187 515L154 527L149 543L213 543Q225 514 228 454L245 348Z" fill="#485769" stroke="#343c4a" stroke-width="8"/>
+<path d="M269 361L279 482L271 519L272 538L347 539Q353 527 321 517L311 460L309 347Z" fill="#596b78" stroke="#343c4a" stroke-width="8"/>
+<path d="M194 429l36 4l-8 65l-43 1Z" fill="url(#metal)" stroke="#465363" stroke-width="6"/>
+<path d="M270 435l39 -5l8 61l-42 8Z" fill="url(#metal)" stroke="#465363" stroke-width="6"/>
+<!-- tabard -->
+<path d="M217 309L273 311L285 444L242 457L203 434Z" fill="#ece2c6" stroke="#35485f" stroke-width="7"/>
+<path d="M248 326l-5 102" stroke="#b29877" stroke-width="6"/>
+<!-- silhouette torso / mid armor -->
+<path d="M193 188Q231 167 280 186L308 309Q291 344 255 354L183 325Z" fill="#314b69" stroke="#3b4051" stroke-width="8"/>
+<path d="M198 200Q228 188 282 207L296 285L251 320L191 285Z" fill="url(#metal)" stroke="#576d81" stroke-width="7"/>
+<path d="M200 302Q254 324 298 306" fill="none" stroke="#c7a06d" stroke-width="9"/>
+<!-- right arm spear -->
+<path d="M192 226L142 287L121 351L146 369L188 318L220 254Z" fill="#586e83" stroke="#3b4861" stroke-width="8"/>
+<path d="M131 324L151 340L132 369L113 354Z" fill="#d2d2c3" stroke="#414d62" stroke-width="6"/>
+<!-- spear shaft behind hand -->
+<path d="M102 529L104 40" stroke="#25364f" stroke-width="15" stroke-linecap="round"/>
+<path d="M98 469h12M99 304h12M99 161h12" stroke="#c4a26b" stroke-width="14"/>
+<path d="M105 8L85 53L105 99L125 53Z" fill="url(#metal)" stroke="#3a4a62" stroke-width="6"/>
+<path d="M91 71H120" stroke="#ae8758" stroke-width="6"/>
+<ellipse cx="116" cy="364" rx="20" ry="19" fill="#343c4b" stroke="#b7996d" stroke-width="5"/>
+<!-- left arm behind shield -->
+<path d="M280 220Q325 224 350 304L334 360L300 345L305 296L270 268Z" fill="#667d91" stroke="#343f57" stroke-width="9"/>
+<!-- fur collar -->
+<path d="M182 197Q190 178 198 169L290 162L304 213L285 228L274 211L260 224L243 212L219 230L204 209L188 229Z" fill="#d7d4c9" stroke="#9faaa4" stroke-width="6"/>
+<!-- hair back braid -->
+<path d="M186 138Q161 138 150 184Q158 221 175 253Q188 267 173 294" fill="none" stroke="#8f765a" stroke-width="31" stroke-linecap="round"/>
+<path d="M186 143Q157 161 165 187Q185 196 173 220Q162 233 174 255" fill="none" stroke="#d1ae78" stroke-width="22" stroke-dasharray="24 10" stroke-linecap="round"/>
+<!-- head anime -->
+<path d="M173 85Q198 41 261 66Q286 95 277 141Q266 179 226 185Q198 175 187 144Z" fill="#f0cdb1" stroke="#866e67" stroke-width="6"/>
+<path d="M181 133Q169 93 187 74Q214 37 267 65Q288 86 283 111Q250 104 231 83Q210 108 177 107Z" fill="#d1ab77" stroke="#8a7058" stroke-width="8"/>
+<path d="M178 98Q199 100 216 82L235 92Q242 75 265 83" fill="none" stroke="#f6deaa" stroke-width="10" stroke-linecap="round"/>
+<path d="M264 119q-16 -9 -30 1" fill="none" stroke="#344958" stroke-width="6"/>
+<ellipse cx="246" cy="124" rx="7" ry="11" fill="#5395a5"/><circle cx="248" cy="121" r="3" fill="#fcfaf0"/>
+<path d="M258 146q-8 5 -18 1" fill="none" stroke="#ad8278" stroke-width="3"/>
+<circle cx="228" cy="146" r="2.5" fill="#ae8778"/><circle cx="217" cy="140" r="2" fill="#ae8778"/>
+<!-- blue shield always visually front; valid as proxy only -->
+<ellipse cx="357" cy="323" rx="72" ry="97" fill="#30465f" stroke="#c2a271" stroke-width="13"/>
+<ellipse cx="357" cy="323" rx="60" ry="86" fill="#344c69" stroke="#475871" stroke-width="5"/>
+<circle cx="358" cy="323" r="38" fill="none" stroke="#c4a26a" stroke-width="7"/>
+<path d="M358 266L350 305L316 323L350 331L358 374L366 331L399 323L366 315Z" fill="#d1b579"/>
+<circle cx="358" cy="323" r="15" fill="#ad8854" stroke="#eed8a5" stroke-width="3"/>
+<!-- practical, flat boots foreground -->
+<path d="M150 513L191 510L202 535L200 545L139 545Z" fill="#657b8a" stroke="#333f50" stroke-width="7"/>
+<path d="M273 518L323 516L347 535L345 546L272 546Z" fill="#667e91" stroke="#344354" stroke-width="7"/>
+</svg>
