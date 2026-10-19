@@ -120,7 +120,7 @@
 - [ ] **R2-06** Billboard corregido con pivote de pies, contacto, sombra y oclusiones frente a rocas/muros/escaleras; test 360° de yaw según límites que se aprueben.
 - [ ] **R2-07** HUD de selección, alcance/altura y minimapa básico si aporta legibilidad.
 - [ ] **R2-08** Prueba de rendimiento para escenario pequeño y carga de unidades, registrando hardware, versión y frame time. No optimizar prematuramente una batalla «masiva» teórica.
-- [ ] **R2-09** Importar y versionar el PoC isométrico que antes vivía solo en ZIP; refactorizar responsabilidades; ensayar **ISO_FULL / ISO_HYBRID / TOPDOWN** a distintos pitch con histéresis y fallbacks, preservando selección y estado de la cuadrícula. Umbrales y dirección artística en prueba, no aprobados. Véanse [ADR-0001](engineering/adr/ADR-0001-pitch-presentation.md) y [prompt de OpenCode R2](prompts/opencode/R2_CAMERA_PRESENTATION.md). Revisar PR de baseline antes de añadir la conmutación.
+- [ ] **R2-09** Importar y versionar el PoC isométrico que antes vivía solo en ZIP; refactorizar responsabilidades; ensayar **ISO_FULL / ISO_HYBRID / TOPDOWN** a distintos pitch con histéresis y fallbacks, preservando selección y estado de la cuadrícula. Umbrales y dirección artística en prueba, no aprobados. Véanse [ADR-0001](engineering/adr/ADR-0001-pitch-presentation.md), [diagnóstico previo de OpenCode R2 (archivado)](prompts/opencode/R2_CAMERA_PRESENTATION.md) y [prompt separado para PR A (baseline)](prompts/opencode/R2_BASELINE_PR_A.md). **Completar y revisar PR A antes de autorizar la conmutación en PR B.**
 
 ### Gate R2
 
