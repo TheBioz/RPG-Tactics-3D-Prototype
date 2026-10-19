@@ -30,6 +30,10 @@ Review BLOCKER, MAJOR, MINOR, SUGGESTION; reportar archivo/línea, impacto y sol
 
 En Settings / Branches / rulesets: PR obligatorio para main, bloquear push directo, checks obligatorios cuando existan, resolver threads, exigir revisión. Esta documentación NO habilita técnicamente branch protection; si no permite auto-aprobación en repo solo-dev, aplicar de forma disciplinada revisión en PR sin fingir un segundo revisor humano.
 
+## Directorio local único acordado
+
+**Ruta exclusiva de trabajo:** `C:\Dev\RPG-Tactics-3D-Prototype`. El autor ha reunido todos los materiales allí. OpenCode debe buscar, leer, desarrollar, probar y generar entregables únicamente bajo esa raíz. No solicitar ZIPs o carpetas externas si el material ya está presente. La presencia local de un ZIP/escena **no** implica que se haya versionado: inspeccionar `git status`, decidir la ubicación definitiva de fuentes en `experiments/` y preparar PR antes de mover o borrar nada. El script de referencia antiguo solo se importa con revisión y trazabilidad.
+
 ## Estado actual de la prueba de cámara
 
-El ZIP RTM_Isometric_Art_PoC_v0_2_billboard_fix.zip existe como experimento **fuera de Git**, aunque docs y un patch están en poc/isometric-2d-art-gate. OpenCode debe importar el código a experiments/iso_art_gate, con SVG/texto y licencias verificadas, antes de evolucionarlo. No copiarlo ciegamente al futuro game/ ni al Maker antiguo.
+El paquete RTM_Isometric_Art_PoC_v0_2_billboard_fix.zip y/o su contenido **han sido colocados por el autor en la raíz local o sus subdirectorios**, pero su ruta exacta y estado Git se verificarán durante el diagnóstico. En GitHub, la rama poc/isometric-2d-art-gate solo tenía documentación y un parche en la última comprobación. OpenCode debe examinar fuentes locales antes de proponer importación a experiments/iso_art_gate, con revisión de licencias, sin copiar ciegamente a game/ ni al antiguo Maker.

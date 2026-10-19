@@ -2,6 +2,8 @@
 
 Ámbito: TheBioz/RPG-Tactics-3D-Prototype. Leer antes de modificar: docs/GDD.md, docs/ROADMAP.md, docs/engineering/ARCHITECTURE.md, docs/engineering/WORKFLOW.md y el prompt concreto del hito. **El GDD y roadmap v0.1 son borradores**: las opciones ABIERTO o PROPUESTO no son aprobaciones del usuario.
 
+**Directorio único de desarrollo (indicado por el autor):** `C:\Dev\RPG-Tactics-3D-Prototype`. No salir de esa raíz para acceder al PoC, crear proyectos, dejar ZIPs u otros artefactos del juego. Buscar archivos existentes allí y **distinguir presencia en disco de seguimiento por Git** antes de proponer un cambio.
+
 ## Reglas de trabajo
 
 1. Inspeccionar el repo y su estado git antes de tocar código. Trabajar en una rama corta, nunca hacer push directo ni merge automático a main. No sobrescribir cambios locales sin permiso.

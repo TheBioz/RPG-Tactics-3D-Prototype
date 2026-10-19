@@ -3,7 +3,7 @@
 - Main ya contiene docs/GDD.md y docs/ROADMAP.md en v0.1: **borradores, no aprobaciones finales**.
 - Main conserva pre-GDD y arte PC-001; no incorpora todavía el proyecto Godot isométrico completo.
 - Rama poc/isometric-2d-art-gate solo documenta experimento y corrección billboard, no script/assets reales.
-- El ZIP RTM_Isometric_Art_PoC_v0_2_billboard_fix.zip es **externo al repositorio** y se ha probado en PC del usuario; contiene código y SVG que deberá importar OpenCode a Git para convertirse en fuente de verdad.
+- **Actualización comunicada por el autor:** ha colocado todos los materiales en `C:\Dev\RPG-Tactics-3D-Prototype`. OpenCode debe inspeccionar la ruta del PoC y el estado Git local; no puede afirmarse aún que el código esté versionado en GitHub. Todo el trabajo futuro queda restringido a esa raíz.
 - El vídeo de usuario demuestra problema real al llegar cerca de vista cenital; ADR-0001 propone modos de presentación por pitch, **pendiente de implementar**.
 - Nuevo flujo acordado: OpenCode codifica; desde ChatGPT se prepara prompt, se contrasta con GDD/roadmap y se revisa el diff.
 - Branch protection GitHub **pendiente de configurar** manualmente. La gobernanza se propone mediante PR, sin merge directo.
