@@ -2,16 +2,9 @@ extends Node3D
 ## Art feasibility PoC. No tactical runtime, pathfinding or character animation.
 ## All props and actor are 2D illustrations. Only terrain, walls and floor use 3D boxes.
 
-const WIDTH: int = 12
-const DEPTH: int = 12
 const CELL: float = 1.0
 const STEP_Y: float = 0.58
 const BASE_Y: float = 0.42
-const GRASS: int = 0
-const GRASS_B: int = 1
-const ROAD: int = 2
-const STONE: int = 3
-const WATER: int = 4
 
 const TEX_GRASS: Texture2D = preload("res://art/ground_grass.svg")
 const TEX_GRASS_B: Texture2D = preload("res://art/ground_grass_2.svg")
@@ -26,8 +19,7 @@ const TEX_FLOWERS: Texture2D = preload("res://art/flowers.svg")
 const TEX_RUIN: Texture2D = preload("res://art/ruin_arch.svg")
 
 @onready var camera: Camera3D = $Camera3D
-var terrain: Array = []
-var surfaces: Array = []
+var grid_model: GridModel
 var top_materials: Array[StandardMaterial3D] = []
 var cliff_material: StandardMaterial3D
 var camera_yaw: float = 45.0
@@ -44,9 +36,11 @@ var prop_root: Node3D
 var selection: MeshInstance3D
 var grid_draw: MeshInstance3D
 var hud_text: Label
-var current_tile: Vector2i = Vector2i(5, 6)
+var selected_coordinate: Vector2i = Vector2i(5, 6)
+var actor_coordinate: Vector2i = Vector2i(5, 6)
 
 func _ready() -> void:
+	grid_model = GridModel.new()
 	terrain_root = Node3D.new()
 	terrain_root.name = "Terrain3D"
 	add_child(terrain_root)
@@ -54,7 +48,6 @@ func _ready() -> void:
 	prop_root.name = "PaintedProps2D"
 	add_child(prop_root)
 	_build_materials()
-	_build_heights_and_surfaces()
 	_build_terrain()
 	_build_props()
 	if ResourceLoader.exists("res://art/pc001_reference_character.png"):
@@ -77,34 +70,15 @@ func _build_materials() -> void:
 	cliff_material.albedo_color = Color("827c7c")
 	cliff_material.roughness = 1.0
 
-func _build_heights_and_surfaces() -> void:
-	for z in DEPTH:
-		var hrow: Array[int] = []
-		var srow: Array[int] = []
-		for x in WIDTH:
-			var level: int = 0
-			if x >= 7 and z <= 6:
-				level = 1
-			if x >= 9 and z <= 4:
-				level = 2
-			if x <= 2 and z >= 9:
-				level = 1
-			var surf: int = GRASS if ((x * 5 + z * 3) % 4 != 0) else GRASS_B
-			if abs(z - 6) <= 1 and x >= 2 and x <= 10:
-				surf = ROAD
-			if (x == 7 and z >= 3 and z <= 5) or (x == 8 and z == 4):
-				surf = STONE
-			if x <= 2 and z <= 2:
-				surf = WATER
-			hrow.append(level)
-			srow.append(surf)
-		terrain.append(hrow)
-		surfaces.append(srow)
-
 func _surface_top(x: int, z: int) -> float:
-	return BASE_Y + float(terrain[z][x]) * STEP_Y
+	var coordinate := Vector2i(x, z)
+	var height_level: int = grid_model.height_level_at(coordinate)
+	assert(height_level != GridModel.INVALID_HEIGHT, "Cannot render an invalid grid coordinate")
+	return BASE_Y + float(height_level) * STEP_Y
 
 func _tile_center(x: int, z: int) -> Vector3:
+	var coordinate := Vector2i(x, z)
+	assert(grid_model.contains(coordinate), "Cannot position a view at an invalid grid coordinate")
 	return Vector3((float(x) + 0.5) * CELL, _surface_top(x, z), (float(z) + 0.5) * CELL)
 
 func _build_terrain() -> void:
@@ -117,8 +91,8 @@ func _build_terrain() -> void:
 	dark_mat.albedo_color = Color("545b65")
 	plinth.material_override = dark_mat
 	terrain_root.add_child(plinth)
-	for z in DEPTH:
-		for x in WIDTH:
+	for z in range(GridModel.DEPTH):
+		for x in range(GridModel.WIDTH):
 			var top: float = _surface_top(x, z)
 			var base_mesh := BoxMesh.new()
 			base_mesh.size = Vector3(CELL, top - 0.02, CELL)
@@ -134,12 +108,16 @@ func _build_terrain() -> void:
 			cap.mesh = cap_mesh
 			cap.name = "IllustratedSurface_%02d_%02d" % [x,z]
 			cap.position = Vector3(x + 0.5, top, z + 0.5)
-			cap.material_override = top_materials[surfaces[z][x]]
+			var surface_kind: int = grid_model.surface_kind_at(Vector2i(x, z))
+			assert(surface_kind != GridModel.INVALID_SURFACE, "Cannot render an invalid grid surface")
+			cap.material_override = top_materials[surface_kind]
 			terrain_root.add_child(cap)
 			var tile_body := StaticBody3D.new()
 			tile_body.name = "TileCollider_%02d_%02d" % [x,z]
+			tile_body.add_to_group("grid_tile")
 			tile_body.set_meta("tile_x", x)
 			tile_body.set_meta("tile_z", z)
+			tile_body.set_meta("height_level", grid_model.height_level_at(Vector2i(x, z)))
 			var shape := CollisionShape3D.new()
 			var box_shape := BoxShape3D.new()
 			box_shape.size = Vector3(CELL, top + 0.03, CELL)
@@ -207,8 +185,8 @@ func _build_grid() -> void:
 	grid_draw.name = "GridOverlay"
 	var im := ImmediateMesh.new()
 	im.surface_begin(Mesh.PRIMITIVE_LINES)
-	for z in DEPTH:
-		for x in WIDTH:
+	for z in range(GridModel.DEPTH):
+		for x in range(GridModel.WIDTH):
 			var h := _surface_top(x, z) + 0.052
 			var x0 := float(x) + 0.02
 			var x1 := float(x) + 0.98
@@ -252,7 +230,8 @@ func _build_selection() -> void:
 	_update_selection()
 
 func _update_selection() -> void:
-	selection.position = _tile_center(current_tile.x, current_tile.y) + Vector3(0, 0.07, 0)
+	assert(grid_model.contains(selected_coordinate), "Selection must be a valid grid coordinate")
+	selection.position = _tile_center(selected_coordinate.x, selected_coordinate.y) + Vector3(0, 0.07, 0)
 
 func _build_world_light() -> void:
 	var light := DirectionalLight3D.new()
@@ -359,34 +338,79 @@ func _pick_tile(mouse_pos: Vector2) -> void:
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		return
-	var obj: Object = hit["collider"]
-	if not obj.has_meta("tile_x"):
-		return
-	current_tile = Vector2i(int(obj.get_meta("tile_x")), int(obj.get_meta("tile_z")))
+	select_grid_collider(hit.get("collider"))
+
+func select_cell(coordinate: Vector2i) -> bool:
+	if not grid_model.contains(coordinate):
+		return false
+	selected_coordinate = coordinate
 	_update_selection()
 	_refresh_hud()
+	return true
+
+func select_grid_collider(collider: Object) -> bool:
+	if collider == null or not is_instance_valid(collider):
+		return false
+	var tile_collider := collider as StaticBody3D
+	if tile_collider == null or not tile_collider.is_in_group("grid_tile"):
+		return false
+	if not tile_collider.has_meta("tile_x") or not tile_collider.has_meta("tile_z"):
+		return false
+	var raw_x: Variant = tile_collider.get_meta("tile_x")
+	var raw_z: Variant = tile_collider.get_meta("tile_z")
+	if typeof(raw_x) != TYPE_INT or typeof(raw_z) != TYPE_INT:
+		return false
+	var coordinate := Vector2i(int(raw_x), int(raw_z))
+	if not grid_model.contains(coordinate):
+		return false
+	if not tile_collider.has_meta("height_level"):
+		return false
+	var raw_height: Variant = tile_collider.get_meta("height_level")
+	if typeof(raw_height) != TYPE_INT or int(raw_height) != grid_model.height_level_at(coordinate):
+		return false
+	return select_cell(coordinate)
+
+func move_actor_to(coordinate: Vector2i) -> bool:
+	if not grid_model.contains(coordinate):
+		return false
+	if grid_model.surface_kind_at(coordinate) == GridModel.SurfaceKind.WATER:
+		return false
+	if hero == null or hero_shadow == null:
+		return false
+	var at := _tile_center(coordinate.x, coordinate.y)
+	actor_coordinate = coordinate
+	hero.position = at + Vector3(0, 0.825, 0)
+	hero_shadow.position = at + Vector3(0, 0.048, 0)
+	_refresh_hud()
+	return true
 
 func _move_proxy() -> void:
-	if surfaces[current_tile.y][current_tile.x] == WATER:
-		return
-	var at := _tile_center(current_tile.x, current_tile.y)
+	move_actor_to(selected_coordinate)
+
+func apply_actor_texture(texture: Texture2D) -> bool:
+	if texture == null or hero == null or hero_shadow == null:
+		return false
+	if not grid_model.contains(actor_coordinate):
+		return false
+	var at := _tile_center(actor_coordinate.x, actor_coordinate.y)
+	hero.texture = texture
+	hero.pixel_size = 1.65 / float(texture.get_height())
 	hero.position = at + Vector3(0, 0.825, 0)
-	if hero_shadow != null:
-		hero_shadow.position = at + Vector3(0, 0.048, 0)
-	_refresh_hud()
+	hero_shadow.position = at + Vector3(0, 0.048, 0)
+	return true
 
 func _toggle_actor_reference() -> void:
 	if reference_texture == null:
 		return
-	use_reference = not use_reference
-	var tex: Texture2D = reference_texture if use_reference else TEX_HERO
-	hero.texture = tex
-	hero.pixel_size = 1.65 / float(tex.get_height())
-	var at := _tile_center(current_tile.x, current_tile.y)
-	hero.position = Vector3(hero.position.x, at.y + 0.825, hero.position.z)
-	_refresh_hud()
+	var next_use_reference := not use_reference
+	var tex: Texture2D = reference_texture if next_use_reference else TEX_HERO
+	if apply_actor_texture(tex):
+		use_reference = next_use_reference
+		_refresh_hud()
 
 func _refresh_hud() -> void:
 	if hud_text == null:
 		return
-	hud_text.text = "Casilla: (%d, %d)   Altura: %d\nCam yaw: %.0f°   pitch: %.0f°   zoom: %.1f\nPC-001: proxy anime 2D / facing gráfico a cámara\nFacing lógico de mundo: independiente (por implementar)\nActor: %s" % [current_tile.x, current_tile.y, terrain[current_tile.y][current_tile.x], camera_yaw, camera_pitch, camera_size, "Ilustración C0 (NO mini anime)" if use_reference else "Proxy SVG de producción (NO canon)"]
+	var selected_height: int = grid_model.height_level_at(selected_coordinate)
+	assert(selected_height != GridModel.INVALID_HEIGHT, "HUD selection must be valid")
+	hud_text.text = "Casilla: (%d, %d)   Altura: %d\nCam yaw: %.0f°   pitch: %.0f°   zoom: %.1f\nPC-001: proxy anime 2D / facing gráfico a cámara\nFacing lógico de mundo: independiente (por implementar)\nActor: %s" % [selected_coordinate.x, selected_coordinate.y, selected_height, camera_yaw, camera_pitch, camera_size, "Ilustración C0 (NO mini anime)" if use_reference else "Proxy SVG de producción (NO canon)"]
