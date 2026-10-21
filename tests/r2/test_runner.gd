@@ -131,32 +131,87 @@ func _test_scene_interactions() -> void:
 	var initial_shadow_position: Vector3 = shadow.position
 	var initial_actor_surface_y: float = BASE_Y + float(model.height_level_at(initial_actor)) * STEP_Y
 	var high_cell := Vector2i(7, 6)
+	var imported_height: int = hero.texture.get_height()
+	var initial_pixel_size: float = hero.pixel_size
+	print("B1-ANCHOR proxy import: %dx%d, pixel_size=%.8f, centered=%s, center_y=%.8f, surface_y=%.8f" % [
+		hero.texture.get_width(), imported_height, initial_pixel_size, hero.centered,
+		initial_hero_position.y, initial_actor_surface_y,
+	])
 
 	_expect_equal(initial_actor, Vector2i(5, 6), "actor logical cell must initialize at (5,6)")
 	_expect_equal(initial_selection, Vector2i(5, 6), "selection must initialize at (5,6)")
-	_expect(scene.call("select_cell", high_cell), "valid elevated cell must be selectable")
-	_expect_equal(scene.get("selected_coordinate"), high_cell, "selection must update to the chosen cell")
-	_expect_equal(scene.get("actor_coordinate"), initial_actor,
-		"selecting another cell must not move the actor logically")
-	_expect(hero.position.distance_to(initial_hero_position) < 0.0001,
-		"selection alone must not move the actor visually")
-	_expect(shadow.position.distance_to(initial_shadow_position) < 0.0001,
-		"selection alone must not move the actor shadow")
+	_expect(imported_height > 0 and initial_pixel_size > 0.0,
+		"initial proxy texture dimensions and scale must be positive")
+	_expect(hero.centered, "Sprite3D pivot must be centered for contact-point calculation")
+	var initial_half_height: float = float(imported_height) * initial_pixel_size * 0.5
+	_expect(absf(initial_hero_position.y - (initial_actor_surface_y + initial_half_height)) < 0.0001,
+		"initial sprite center must match imported texture height and scale")
+	_expect(absf(initial_hero_position.y - initial_half_height - initial_actor_surface_y) < 0.0001,
+		"initial proxy feet must contact its model surface")
+	_expect(absf(initial_shadow_position.y - (initial_actor_surface_y + 0.048)) < 0.0001,
+		"initial proxy shadow must contact its model surface")
+
+	# Regression: move the fresh scene's actor before apply_actor_texture() normalizes its scale.
+	_expect(scene.call("move_actor_to", high_cell), "fresh actor must move to a valid elevated cell")
+	_expect_equal(scene.get("actor_coordinate"), high_cell,
+		"cold move must update the actor logical cell")
+	var high_surface_y: float = BASE_Y + float(model.height_level_at(high_cell)) * STEP_Y
+	var cold_sprite: Sprite3D = scene.get("hero")
+	var cold_shadow: MeshInstance3D = scene.get("hero_shadow")
+	var cold_half_height: float = float(cold_sprite.texture.get_height()) * cold_sprite.pixel_size * 0.5
+	_expect(absf(cold_sprite.position.y - cold_half_height - high_surface_y) < 0.0001,
+		"moving before texture change must keep proxy feet on the elevated surface")
+	_expect(absf(cold_shadow.position.y - (high_surface_y + 0.048)) < 0.0001,
+		"moving before texture change must keep the shadow on the elevated surface")
+	_expect(is_equal_approx(cold_sprite.position.x, 7.5) and is_equal_approx(cold_sprite.position.z, 6.5),
+		"cold move must position sprite at the target cell center")
+
+	var cold_actor_position: Vector3 = cold_sprite.position
+	var cold_shadow_position: Vector3 = cold_shadow.position
+	_expect(scene.call("select_cell", Vector2i(3, 0)), "a cell different from the actor may be selected")
+	_expect_equal(scene.get("selected_coordinate"), Vector2i(3, 0),
+		"selection must update independently of the actor")
+	_expect_equal(scene.get("actor_coordinate"), high_cell,
+		"selecting elsewhere must retain the actor's logical coordinate")
+	_expect(cold_sprite.position.distance_to(cold_actor_position) < 0.0001,
+		"selecting elsewhere must not move the actor sprite")
+	_expect(cold_shadow.position.distance_to(cold_shadow_position) < 0.0001,
+		"selecting elsewhere must not move the actor shadow")
 
 	var proxy_texture: Texture2D = load("res://art/pc001_map_proxy.svg")
 	_expect(scene.call("apply_actor_texture", proxy_texture),
 		"versioned proxy texture must be accepted without the private PNG")
-	_expect_equal(scene.get("actor_coordinate"), initial_actor,
+	_expect_equal(scene.get("actor_coordinate"), high_cell,
 		"changing actor texture must retain its logical cell")
-	var actor_sprite_bottom_y: float = hero.position.y \
-		- float(hero.texture.get_height()) * hero.pixel_size * 0.5
-	_expect(absf(actor_sprite_bottom_y - initial_actor_surface_y) < 0.0001,
+	var actor_sprite_bottom_y: float = cold_sprite.position.y \
+		- float(cold_sprite.texture.get_height()) * cold_sprite.pixel_size * 0.5
+	_expect(absf(actor_sprite_bottom_y - high_surface_y) < 0.0001,
 		"changing actor texture with a different selection must keep the sprite feet on the actor cell")
-	_expect(is_equal_approx(hero.position.x, initial_hero_position.x)
-		and is_equal_approx(hero.position.z, initial_hero_position.z),
+	_expect(is_equal_approx(cold_sprite.position.x, 7.5)
+		and is_equal_approx(cold_sprite.position.z, 6.5),
 		"changing actor texture with a different selection must retain actor X/Z")
-	_expect(shadow.position.distance_to(initial_shadow_position) < 0.0001,
+	_expect(cold_shadow.position.distance_to(cold_shadow_position) < 0.0001,
 		"changing actor texture with a different selection must retain shadow anchor")
+
+	var invalid_texture := ImageTexture.new()
+	_expect(invalid_texture.get_width() <= 0 or invalid_texture.get_height() <= 0,
+		"invalid texture fixture must have a non-positive dimension")
+	var actor_before_invalid_texture: Vector2i = scene.get("actor_coordinate")
+	var texture_before_invalid: Texture2D = cold_sprite.texture
+	var pixel_size_before_invalid: float = cold_sprite.pixel_size
+	var hero_position_before_invalid: Vector3 = cold_sprite.position
+	var shadow_position_before_invalid: Vector3 = cold_shadow.position
+	_expect(not scene.call("apply_actor_texture", invalid_texture),
+		"texture with invalid dimensions must be rejected")
+	_expect_equal(scene.get("actor_coordinate"), actor_before_invalid_texture,
+		"invalid texture must not mutate actor coordinate")
+	_expect(cold_sprite.texture == texture_before_invalid
+		and is_equal_approx(cold_sprite.pixel_size, pixel_size_before_invalid),
+		"invalid texture must not mutate texture or pixel size")
+	_expect(cold_sprite.position.distance_to(hero_position_before_invalid) < 0.0001,
+		"invalid texture must not move actor sprite")
+	_expect(cold_shadow.position.distance_to(shadow_position_before_invalid) < 0.0001,
+		"invalid texture must not move actor shadow")
 
 	var valid_collider: StaticBody3D = _find_grid_collider(scene, Vector2i(3, 0))
 	_expect(valid_collider != null, "scene must expose colliders with both tile metadata keys")
@@ -165,7 +220,7 @@ func _test_scene_interactions() -> void:
 			"valid grid collider must select its model coordinate")
 		_expect_equal(scene.get("selected_coordinate"), Vector2i(3, 0),
 			"collider selection must map tile_x and tile_z")
-		_expect_equal(scene.get("actor_coordinate"), initial_actor,
+		_expect_equal(scene.get("actor_coordinate"), high_cell,
 			"collider selection must not move the actor")
 
 	var selected_before_invalid: Vector2i = scene.get("selected_coordinate")
@@ -187,35 +242,47 @@ func _test_scene_interactions() -> void:
 	_expect_equal(scene.get("selected_coordinate"), selected_before_invalid,
 		"invalid collider attempts must not mutate selection")
 
-	_expect(scene.call("move_actor_to", high_cell), "actor must move to a valid elevated cell")
-	_expect_equal(scene.get("actor_coordinate"), high_cell, "valid move must update actor logical cell")
-	var expected_surface_y: float = BASE_Y + float(model.height_level_at(high_cell)) * STEP_Y
-	var expected_hero := Vector3(7.5, expected_surface_y + 0.825, 6.5)
-	var expected_shadow := Vector3(7.5, expected_surface_y + 0.048, 6.5)
-	_expect(hero.position.distance_to(expected_hero) < 0.0001,
-		"actor sprite must use the model height for the destination")
-	_expect(shadow.position.distance_to(expected_shadow) < 0.0001,
-		"actor shadow must remain on the same destination surface")
+	_expect(scene.call("move_actor_to", initial_actor),
+		"actor must move to a lower cell after texture replacement")
+	_expect_equal(scene.get("actor_coordinate"), initial_actor,
+		"lower-height move must update actor logical coordinate")
+	var low_surface_y: float = BASE_Y + float(model.height_level_at(initial_actor)) * STEP_Y
+	var low_sprite_bottom_y: float = cold_sprite.position.y \
+		- float(cold_sprite.texture.get_height()) * cold_sprite.pixel_size * 0.5
+	_expect(absf(low_sprite_bottom_y - low_surface_y) < 0.0001,
+		"post-texture lower-height move must keep sprite feet on the surface")
+	_expect(absf(cold_shadow.position.y - (low_surface_y + 0.048)) < 0.0001,
+		"post-texture lower-height move must keep shadow aligned")
+	_expect(scene.call("move_actor_to", high_cell),
+		"actor must move back to the elevated cell after texture replacement")
+	_expect_equal(scene.get("actor_coordinate"), high_cell,
+		"elevated move must update actor logical coordinate")
+	var returned_sprite_bottom_y: float = cold_sprite.position.y \
+		- float(cold_sprite.texture.get_height()) * cold_sprite.pixel_size * 0.5
+	_expect(absf(returned_sprite_bottom_y - high_surface_y) < 0.0001,
+		"post-texture elevated move must keep sprite feet on the surface")
+	_expect(absf(cold_shadow.position.y - (high_surface_y + 0.048)) < 0.0001,
+		"post-texture elevated move must keep shadow aligned")
 
 	var moved_actor: Vector2i = scene.get("actor_coordinate")
-	var moved_hero_position: Vector3 = hero.position
-	var moved_shadow_position: Vector3 = shadow.position
+	var moved_hero_position: Vector3 = cold_sprite.position
+	var moved_shadow_position: Vector3 = cold_shadow.position
 	_expect(scene.call("select_cell", Vector2i(0, 0)), "water cell may be selected")
 	_expect(not scene.call("move_actor_to", scene.get("selected_coordinate")),
 		"moving the test actor onto water must be rejected")
 	_expect_equal(scene.get("actor_coordinate"), moved_actor,
 		"water destination must not mutate the actor coordinate")
-	_expect(hero.position.distance_to(moved_hero_position) < 0.0001,
+	_expect(cold_sprite.position.distance_to(moved_hero_position) < 0.0001,
 		"water destination must not move the actor sprite")
-	_expect(shadow.position.distance_to(moved_shadow_position) < 0.0001,
+	_expect(cold_shadow.position.distance_to(moved_shadow_position) < 0.0001,
 		"water destination must not move the actor shadow")
 	_expect(not scene.call("move_actor_to", Vector2i(12, 12)),
 		"moving the test actor outside the grid must be rejected")
 	_expect_equal(scene.get("actor_coordinate"), moved_actor,
 		"out-of-bounds destination must not mutate the actor coordinate")
-	_expect(hero.position.distance_to(moved_hero_position) < 0.0001,
+	_expect(cold_sprite.position.distance_to(moved_hero_position) < 0.0001,
 		"out-of-bounds destination must not move the actor sprite")
-	_expect(shadow.position.distance_to(moved_shadow_position) < 0.0001,
+	_expect(cold_shadow.position.distance_to(moved_shadow_position) < 0.0001,
 		"out-of-bounds destination must not move the actor shadow")
 
 	var selected_before_invalid_cell: Vector2i = scene.get("selected_coordinate")

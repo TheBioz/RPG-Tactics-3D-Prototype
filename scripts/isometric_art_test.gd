@@ -377,9 +377,12 @@ func move_actor_to(coordinate: Vector2i) -> bool:
 		return false
 	if hero == null or hero_shadow == null:
 		return false
+	var half_height: float = _sprite_half_height(hero.texture, hero.pixel_size)
+	if half_height <= 0.0:
+		return false
 	var at := _tile_center(coordinate.x, coordinate.y)
 	actor_coordinate = coordinate
-	hero.position = at + Vector3(0, 0.825, 0)
+	hero.position = at + Vector3(0, half_height, 0)
 	hero_shadow.position = at + Vector3(0, 0.048, 0)
 	_refresh_hud()
 	return true
@@ -392,12 +395,29 @@ func apply_actor_texture(texture: Texture2D) -> bool:
 		return false
 	if not grid_model.contains(actor_coordinate):
 		return false
+	var texture_width: int = texture.get_width()
+	var texture_height: int = texture.get_height()
+	if texture_width <= 0 or texture_height <= 0:
+		return false
+	var new_pixel_size: float = 1.65 / float(texture_height)
+	if not is_finite(new_pixel_size) or new_pixel_size <= 0.0:
+		return false
+	var half_height: float = _sprite_half_height(texture, new_pixel_size)
+	if half_height <= 0.0:
+		return false
 	var at := _tile_center(actor_coordinate.x, actor_coordinate.y)
 	hero.texture = texture
-	hero.pixel_size = 1.65 / float(texture.get_height())
-	hero.position = at + Vector3(0, 0.825, 0)
+	hero.pixel_size = new_pixel_size
+	hero.position = at + Vector3(0, half_height, 0)
 	hero_shadow.position = at + Vector3(0, 0.048, 0)
 	return true
+
+func _sprite_half_height(texture: Texture2D, pixel_size: float) -> float:
+	if texture == null or texture.get_width() <= 0 or texture.get_height() <= 0:
+		return -1.0
+	if not is_finite(pixel_size) or pixel_size <= 0.0:
+		return -1.0
+	return float(texture.get_height()) * pixel_size * 0.5
 
 func _toggle_actor_reference() -> void:
 	if reference_texture == null:
