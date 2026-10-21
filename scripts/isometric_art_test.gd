@@ -2,15 +2,6 @@ extends Node3D
 ## Art feasibility PoC. No tactical runtime, pathfinding or character animation.
 ## All props and actor are 2D illustrations. Only terrain, walls and floor use 3D boxes.
 
-const CELL: float = 1.0
-const STEP_Y: float = 0.58
-const BASE_Y: float = 0.42
-
-const TEX_GRASS: Texture2D = preload("res://art/ground_grass.svg")
-const TEX_GRASS_B: Texture2D = preload("res://art/ground_grass_2.svg")
-const TEX_ROAD: Texture2D = preload("res://art/ground_path.svg")
-const TEX_STONE: Texture2D = preload("res://art/ground_stone.svg")
-const TEX_WATER: Texture2D = preload("res://art/ground_water.svg")
 const TEX_HERO: Texture2D = preload("res://art/pc001_map_proxy.svg")
 const TEX_TREE: Texture2D = preload("res://art/tree_birch.svg")
 const TEX_TREE_B: Texture2D = preload("res://art/tree_oak.svg")
@@ -20,8 +11,7 @@ const TEX_RUIN: Texture2D = preload("res://art/ruin_arch.svg")
 
 @onready var camera: Camera3D = $Camera3D
 var grid_model: GridModel
-var top_materials: Array[StandardMaterial3D] = []
-var cliff_material: StandardMaterial3D
+var grid_view: GridView
 var camera_yaw: float = 45.0
 var camera_pitch: float = 50.0
 var camera_size: float = 17.0
@@ -31,101 +21,29 @@ var hero: Sprite3D
 var hero_shadow: MeshInstance3D
 var use_reference: bool = false
 var reference_texture: Texture2D
-var terrain_root: Node3D
 var prop_root: Node3D
-var selection: MeshInstance3D
-var grid_draw: MeshInstance3D
 var hud_text: Label
 var selected_coordinate: Vector2i = Vector2i(5, 6)
 var actor_coordinate: Vector2i = Vector2i(5, 6)
 
 func _ready() -> void:
 	grid_model = GridModel.new()
-	terrain_root = Node3D.new()
-	terrain_root.name = "Terrain3D"
-	add_child(terrain_root)
+	grid_view = GridView.new()
+	grid_view.name = "GridView"
+	add_child(grid_view)
+	if not grid_view.configure(grid_model):
+		push_error("IsometricArtTest could not configure GridView from GridModel")
+		return
 	prop_root = Node3D.new()
 	prop_root.name = "PaintedProps2D"
 	add_child(prop_root)
-	_build_materials()
-	_build_terrain()
 	_build_props()
 	if ResourceLoader.exists("res://art/pc001_reference_character.png"):
 		reference_texture = load("res://art/pc001_reference_character.png") as Texture2D
-	_build_selection()
 	_build_world_light()
 	_build_hud()
 	_update_camera()
 	_refresh_hud()
-
-func _build_materials() -> void:
-	var textures: Array[Texture2D] = [TEX_GRASS, TEX_GRASS_B, TEX_ROAD, TEX_STONE, TEX_WATER]
-	for tex in textures:
-		var m := StandardMaterial3D.new()
-		m.albedo_texture = tex
-		m.roughness = 1.0
-		m.metallic = 0.0
-		top_materials.append(m)
-	cliff_material = StandardMaterial3D.new()
-	cliff_material.albedo_color = Color("827c7c")
-	cliff_material.roughness = 1.0
-
-func _surface_top(x: int, z: int) -> float:
-	var coordinate := Vector2i(x, z)
-	var height_level: int = grid_model.height_level_at(coordinate)
-	assert(height_level != GridModel.INVALID_HEIGHT, "Cannot render an invalid grid coordinate")
-	return BASE_Y + float(height_level) * STEP_Y
-
-func _tile_center(x: int, z: int) -> Vector3:
-	var coordinate := Vector2i(x, z)
-	assert(grid_model.contains(coordinate), "Cannot position a view at an invalid grid coordinate")
-	return Vector3((float(x) + 0.5) * CELL, _surface_top(x, z), (float(z) + 0.5) * CELL)
-
-func _build_terrain() -> void:
-	var plinth_mesh := BoxMesh.new()
-	plinth_mesh.size = Vector3(12.45, 0.20, 12.45)
-	var plinth := MeshInstance3D.new()
-	plinth.mesh = plinth_mesh
-	plinth.position = Vector3(6, -0.15, 6)
-	var dark_mat := StandardMaterial3D.new()
-	dark_mat.albedo_color = Color("545b65")
-	plinth.material_override = dark_mat
-	terrain_root.add_child(plinth)
-	for z in range(GridModel.DEPTH):
-		for x in range(GridModel.WIDTH):
-			var top: float = _surface_top(x, z)
-			var base_mesh := BoxMesh.new()
-			base_mesh.size = Vector3(CELL, top - 0.02, CELL)
-			var bedrock := MeshInstance3D.new()
-			bedrock.name = "Cliff_%02d_%02d" % [x,z]
-			bedrock.mesh = base_mesh
-			bedrock.material_override = cliff_material
-			bedrock.position = Vector3(x + 0.5, (top - 0.02) / 2.0, z + 0.5)
-			terrain_root.add_child(bedrock)
-			var cap_mesh := BoxMesh.new()
-			cap_mesh.size = Vector3(1.0, 0.075, 1.0)
-			var cap := MeshInstance3D.new()
-			cap.mesh = cap_mesh
-			cap.name = "IllustratedSurface_%02d_%02d" % [x,z]
-			cap.position = Vector3(x + 0.5, top, z + 0.5)
-			var surface_kind: int = grid_model.surface_kind_at(Vector2i(x, z))
-			assert(surface_kind != GridModel.INVALID_SURFACE, "Cannot render an invalid grid surface")
-			cap.material_override = top_materials[surface_kind]
-			terrain_root.add_child(cap)
-			var tile_body := StaticBody3D.new()
-			tile_body.name = "TileCollider_%02d_%02d" % [x,z]
-			tile_body.add_to_group("grid_tile")
-			tile_body.set_meta("tile_x", x)
-			tile_body.set_meta("tile_z", z)
-			tile_body.set_meta("height_level", grid_model.height_level_at(Vector2i(x, z)))
-			var shape := CollisionShape3D.new()
-			var box_shape := BoxShape3D.new()
-			box_shape.size = Vector3(CELL, top + 0.03, CELL)
-			shape.shape = box_shape
-			tile_body.position = Vector3(x + 0.5, (top - 0.03) / 2.0, z + 0.5)
-			tile_body.add_child(shape)
-			terrain_root.add_child(tile_body)
-	_build_grid()
 
 func _spawn_sprite(tex: Texture2D, x: int, z: int, height: float, pixel: float) -> Sprite3D:
 	var s := Sprite3D.new()
@@ -135,10 +53,11 @@ func _spawn_sprite(tex: Texture2D, x: int, z: int, height: float, pixel: float) 
 	s.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	s.shaded = false
 	s.double_sided = true
-	var top := _surface_top(x, z)
-	s.position = Vector3(x + 0.5, top + float(tex.get_height()) * pixel * 0.5, z + 0.5)
+	var cell_coordinate := Vector2i(x, z)
+	var surface_position := grid_view.world_position_for_cell(cell_coordinate)
+	s.position = surface_position + Vector3(0, float(tex.get_height()) * pixel * 0.5, 0)
 	prop_root.add_child(s)
-	var sh := _add_shadow(Vector3(x + 0.5, top + 0.048, z + 0.5), 0.35 if height < 1.7 else 0.58)
+	var sh := _add_shadow(surface_position + Vector3(0, 0.048, 0), 0.35 if height < 1.7 else 0.58)
 	if tex == TEX_HERO:
 		hero_shadow = sh
 	return s
@@ -179,59 +98,6 @@ func _build_props() -> void:
 	# Portrait-proxy test actor; does NOT prove mini-anime consistency yet.
 	hero = _spawn_sprite(TEX_HERO, 5, 6, 1.65, 0.00325)
 	hero.name = "PC001_IllustratedMapProxy_NOT_CANON"
-
-func _build_grid() -> void:
-	grid_draw = MeshInstance3D.new()
-	grid_draw.name = "GridOverlay"
-	var im := ImmediateMesh.new()
-	im.surface_begin(Mesh.PRIMITIVE_LINES)
-	for z in range(GridModel.DEPTH):
-		for x in range(GridModel.WIDTH):
-			var h := _surface_top(x, z) + 0.052
-			var x0 := float(x) + 0.02
-			var x1 := float(x) + 0.98
-			var z0 := float(z) + 0.02
-			var z1 := float(z) + 0.98
-			for edge in 4:
-				var v0 := Vector3(x0, h, z0)
-				var v1 := Vector3(x1, h, z0)
-				if edge == 1:
-					v0 = Vector3(x1, h, z0)
-					v1 = Vector3(x1, h, z1)
-				elif edge == 2:
-					v0 = Vector3(x1, h, z1)
-					v1 = Vector3(x0, h, z1)
-				elif edge == 3:
-					v0 = Vector3(x0, h, z1)
-					v1 = Vector3(x0, h, z0)
-				im.surface_add_vertex(v0)
-				im.surface_add_vertex(v1)
-	im.surface_end()
-	grid_draw.mesh = im
-	var m := StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	m.albedo_color = Color(0.13, 0.20, 0.27, 0.34)
-	grid_draw.material_override = m
-	terrain_root.add_child(grid_draw)
-
-func _build_selection() -> void:
-	selection = MeshInstance3D.new()
-	selection.name = "SelectedTile"
-	var mesh := BoxMesh.new()
-	mesh.size = Vector3(0.93, 0.025, 0.93)
-	selection.mesh = mesh
-	var m := StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	m.albedo_color = Color(0.96, 0.88, 0.49, 0.32)
-	selection.material_override = m
-	terrain_root.add_child(selection)
-	_update_selection()
-
-func _update_selection() -> void:
-	assert(grid_model.contains(selected_coordinate), "Selection must be a valid grid coordinate")
-	selection.position = _tile_center(selected_coordinate.x, selected_coordinate.y) + Vector3(0, 0.07, 0)
 
 func _build_world_light() -> void:
 	var light := DirectionalLight3D.new()
@@ -316,7 +182,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_G:
 			show_grid = not show_grid
-			grid_draw.visible = show_grid
+			grid_view.set_grid_visible(show_grid)
 		elif event.keycode == KEY_B:
 			show_billboards = not show_billboards
 			prop_root.visible = show_billboards
@@ -343,30 +209,17 @@ func _pick_tile(mouse_pos: Vector2) -> void:
 func select_cell(coordinate: Vector2i) -> bool:
 	if not grid_model.contains(coordinate):
 		return false
+	if not grid_view.set_selected_cell(coordinate):
+		return false
 	selected_coordinate = coordinate
-	_update_selection()
 	_refresh_hud()
 	return true
 
 func select_grid_collider(collider: Object) -> bool:
-	if collider == null or not is_instance_valid(collider):
+	if grid_view == null:
 		return false
-	var tile_collider := collider as StaticBody3D
-	if tile_collider == null or not tile_collider.is_in_group("grid_tile"):
-		return false
-	if not tile_collider.has_meta("tile_x") or not tile_collider.has_meta("tile_z"):
-		return false
-	var raw_x: Variant = tile_collider.get_meta("tile_x")
-	var raw_z: Variant = tile_collider.get_meta("tile_z")
-	if typeof(raw_x) != TYPE_INT or typeof(raw_z) != TYPE_INT:
-		return false
-	var coordinate := Vector2i(int(raw_x), int(raw_z))
+	var coordinate: Vector2i = grid_view.coordinate_from_collider(collider)
 	if not grid_model.contains(coordinate):
-		return false
-	if not tile_collider.has_meta("height_level"):
-		return false
-	var raw_height: Variant = tile_collider.get_meta("height_level")
-	if typeof(raw_height) != TYPE_INT or int(raw_height) != grid_model.height_level_at(coordinate):
 		return false
 	return select_cell(coordinate)
 
@@ -380,7 +233,7 @@ func move_actor_to(coordinate: Vector2i) -> bool:
 	var half_height: float = _sprite_half_height(hero.texture, hero.pixel_size)
 	if half_height <= 0.0:
 		return false
-	var at := _tile_center(coordinate.x, coordinate.y)
+	var at := grid_view.world_position_for_cell(coordinate)
 	actor_coordinate = coordinate
 	hero.position = at + Vector3(0, half_height, 0)
 	hero_shadow.position = at + Vector3(0, 0.048, 0)
@@ -405,7 +258,7 @@ func apply_actor_texture(texture: Texture2D) -> bool:
 	var half_height: float = _sprite_half_height(texture, new_pixel_size)
 	if half_height <= 0.0:
 		return false
-	var at := _tile_center(actor_coordinate.x, actor_coordinate.y)
+	var at := grid_view.world_position_for_cell(actor_coordinate)
 	hero.texture = texture
 	hero.pixel_size = new_pixel_size
 	hero.position = at + Vector3(0, half_height, 0)

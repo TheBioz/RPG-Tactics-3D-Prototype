@@ -123,8 +123,10 @@ func _test_scene_interactions() -> void:
 	await process_frame
 
 	var model: GridModel = scene.get("grid_model")
+	var grid_view: GridView = scene.get("grid_view")
 	var hero: Sprite3D = scene.get("hero")
 	var shadow: MeshInstance3D = scene.get("hero_shadow")
+	_test_grid_view(grid_view, model)
 	var initial_actor: Vector2i = scene.get("actor_coordinate")
 	var initial_selection: Vector2i = scene.get("selected_coordinate")
 	var initial_hero_position: Vector3 = hero.position
@@ -227,7 +229,16 @@ func _test_scene_interactions() -> void:
 	var fake_collider := StaticBody3D.new()
 	scene.add_child(fake_collider)
 	fake_collider.add_to_group("grid_tile")
+	fake_collider.set_meta("tile_x", 7)
+	fake_collider.set_meta("tile_z", 6)
+	fake_collider.set_meta("height_level", model.height_level_at(Vector2i(7, 6)))
+	_expect(grid_view.coordinate_from_collider(fake_collider) == GridView.INVALID_COORDINATE,
+		"valid-looking collider outside GridView must not be registered")
+	_expect(not scene.call("select_grid_collider", fake_collider),
+		"valid-looking external collider must not select a cell")
 	fake_collider.set_meta("tile_x", 4)
+	fake_collider.remove_meta("tile_z")
+	fake_collider.remove_meta("height_level")
 	_expect(not scene.call("select_grid_collider", fake_collider),
 		"collider missing tile_z must be rejected")
 	fake_collider.set_meta("tile_z", 4)
@@ -292,8 +303,35 @@ func _test_scene_interactions() -> void:
 	_expect_equal(scene.get("actor_coordinate"), moved_actor,
 		"invalid cell selection must not mutate the actor")
 
+	var released_collider: StaticBody3D = _find_grid_collider(scene, Vector2i(0, 4))
+	var released_reference: WeakRef = weakref(released_collider)
+	released_collider.free()
+	var freed_collider: Variant = released_reference.get_ref()
+	_expect(freed_collider == null, "freed collider weak reference must expire")
+	_expect_equal(grid_view.coordinate_from_collider(freed_collider), GridView.INVALID_COORDINATE,
+		"freed collider must be rejected by GridView")
+
 	scene.queue_free()
 	await process_frame
+
+func _test_grid_view(view: GridView, model: GridModel) -> void:
+	var registered_count: int = 0
+	for child in view.get_children():
+		var collider := child as StaticBody3D
+		if collider == null or not collider.is_in_group("grid_tile"):
+			continue
+		registered_count += 1
+		var coordinate: Vector2i = view.coordinate_from_collider(collider)
+		_expect(model.contains(coordinate), "GridView must recognize each collider it created")
+		_expect_equal(coordinate, Vector2i(collider.get_meta("tile_x"), collider.get_meta("tile_z")),
+			"registered collider must map back to its logical x/z cell")
+	_expect_equal(registered_count, 144, "GridView must build exactly one collider for each of 144 cells")
+	_expect(_vector3_is_equal(view.world_position_for_cell(Vector2i(3, 3)), Vector3(3.5, 0.42, 3.5)),
+		"GridView must map a height-0 cell to the baseline world position")
+	_expect(_vector3_is_equal(view.world_position_for_cell(Vector2i(7, 6)), Vector3(7.5, 1.0, 6.5)),
+		"GridView must map a height-1 cell using GridModel")
+	_expect(_vector3_is_equal(view.world_position_for_cell(Vector2i(9, 4)), Vector3(9.5, 1.58, 4.5)),
+		"GridView must map a height-2 cell using GridModel")
 
 func _find_grid_collider(scene: Node, coordinate: Vector2i) -> StaticBody3D:
 	for candidate in scene.get_tree().get_nodes_in_group("grid_tile"):
@@ -309,3 +347,6 @@ func _expect(condition: bool, message: String) -> void:
 
 func _expect_equal(actual: Variant, expected: Variant, message: String) -> void:
 	_expect(actual == expected, "%s (expected %s, got %s)" % [message, expected, actual])
+
+func _vector3_is_equal(actual: Vector3, expected: Vector3) -> bool:
+	return actual.distance_to(expected) < 0.0001
