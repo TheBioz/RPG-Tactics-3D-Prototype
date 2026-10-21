@@ -22,11 +22,11 @@ func _run_tests() -> void:
 	_test_baseline_distributions()
 	await _test_scene_interactions()
 	if _failures.is_empty():
-		print("R2-B1-B grid/scene: %d checks passed" % _checks)
+		print("R2-B2-A GridView: %d checks passed" % _checks)
 		quit(0)
 		return
 	for failure in _failures:
-		push_error("R2-B1-B: " + failure)
+		push_error("R2-B2-A: " + failure)
 	quit(1)
 
 func _test_refcounted_model_and_cell_count() -> void:
@@ -126,7 +126,10 @@ func _test_scene_interactions() -> void:
 	var grid_view: GridView = scene.get("grid_view")
 	var hero: Sprite3D = scene.get("hero")
 	var shadow: MeshInstance3D = scene.get("hero_shadow")
-	_test_grid_view(grid_view, model)
+	var selection_overlay: MeshInstance3D = grid_view.get_node("SelectedTile")
+	var initial_selected: Vector2i = scene.get("selected_coordinate")
+	_expect_equal(initial_selected, Vector2i(5, 6), "scene must start with the original logical selection")
+	_test_grid_view(grid_view, model, initial_selected)
 	var initial_actor: Vector2i = scene.get("actor_coordinate")
 	var initial_selection: Vector2i = scene.get("selected_coordinate")
 	var initial_hero_position: Vector3 = hero.position
@@ -173,6 +176,9 @@ func _test_scene_interactions() -> void:
 	_expect(scene.call("select_cell", Vector2i(3, 0)), "a cell different from the actor may be selected")
 	_expect_equal(scene.get("selected_coordinate"), Vector2i(3, 0),
 		"selection must update independently of the actor")
+	_expect(_vector3_is_equal(selection_overlay.position,
+		grid_view.world_position_for_cell(Vector2i(3, 0)) + Vector3(0.0, 0.07, 0.0)),
+		"valid selection must update the GridView highlight")
 	_expect_equal(scene.get("actor_coordinate"), high_cell,
 		"selecting elsewhere must retain the actor's logical coordinate")
 	_expect(cold_sprite.position.distance_to(cold_actor_position) < 0.0001,
@@ -224,8 +230,39 @@ func _test_scene_interactions() -> void:
 			"collider selection must map tile_x and tile_z")
 		_expect_equal(scene.get("actor_coordinate"), high_cell,
 			"collider selection must not move the actor")
+		var selected_before_metadata_change: Vector2i = scene.get("selected_coordinate")
+		var original_tile_z: Variant = valid_collider.get_meta("tile_z")
+		var original_height: Variant = valid_collider.get_meta("height_level")
+		valid_collider.set_meta("tile_z", int(original_tile_z) + 1)
+		_expect(not scene.call("select_grid_collider", valid_collider),
+			"registered collider with altered tile_z must be rejected")
+		_expect_equal(scene.get("selected_coordinate"), selected_before_metadata_change,
+			"altered tile_z must not mutate selection")
+		valid_collider.set_meta("tile_z", original_tile_z)
+		valid_collider.set_meta("height_level", int(original_height) + 1)
+		_expect(not scene.call("select_grid_collider", valid_collider),
+			"registered collider with altered height must be rejected")
+		_expect_equal(scene.get("selected_coordinate"), selected_before_metadata_change,
+			"altered height must not mutate selection")
+		valid_collider.set_meta("height_level", original_height)
+		_expect(scene.call("select_grid_collider", valid_collider),
+			"restored registered collider metadata must be accepted")
+		_expect_equal(scene.get("selected_coordinate"), Vector2i(3, 0),
+			"restored collider metadata must select its registered coordinate")
 
 	var selected_before_invalid: Vector2i = scene.get("selected_coordinate")
+	var overlay_before_invalid: Vector3 = selection_overlay.position
+	var view_spoof := StaticBody3D.new()
+	grid_view.add_child(view_spoof)
+	view_spoof.add_to_group("grid_tile")
+	view_spoof.set_meta("tile_x", 7)
+	view_spoof.set_meta("tile_z", 6)
+	view_spoof.set_meta("height_level", model.height_level_at(Vector2i(7, 6)))
+	_expect(grid_view.coordinate_from_collider(view_spoof) == GridView.INVALID_COORDINATE,
+		"valid-looking child of GridView must be rejected if it was not registered")
+	_expect(not scene.call("select_grid_collider", view_spoof),
+		"valid-looking unregistered GridView child must not select a cell")
+	view_spoof.free()
 	var fake_collider := StaticBody3D.new()
 	scene.add_child(fake_collider)
 	fake_collider.add_to_group("grid_tile")
@@ -252,6 +289,8 @@ func _test_scene_interactions() -> void:
 	fake_collider.free()
 	_expect_equal(scene.get("selected_coordinate"), selected_before_invalid,
 		"invalid collider attempts must not mutate selection")
+	_expect(_vector3_is_equal(selection_overlay.position, overlay_before_invalid),
+		"invalid collider attempts must not move the selection highlight")
 
 	_expect(scene.call("move_actor_to", initial_actor),
 		"actor must move to a lower cell after texture replacement")
@@ -297,9 +336,12 @@ func _test_scene_interactions() -> void:
 		"out-of-bounds destination must not move the actor shadow")
 
 	var selected_before_invalid_cell: Vector2i = scene.get("selected_coordinate")
+	var overlay_before_invalid_cell: Vector3 = selection_overlay.position
 	_expect(not scene.call("select_cell", Vector2i(12, 12)), "out-of-bounds cell must not be selectable")
 	_expect_equal(scene.get("selected_coordinate"), selected_before_invalid_cell,
 		"invalid cell selection must not mutate selection")
+	_expect(_vector3_is_equal(selection_overlay.position, overlay_before_invalid_cell),
+		"invalid cell selection must leave the current highlight unchanged")
 	_expect_equal(scene.get("actor_coordinate"), moved_actor,
 		"invalid cell selection must not mutate the actor")
 
@@ -314,8 +356,9 @@ func _test_scene_interactions() -> void:
 	scene.queue_free()
 	await process_frame
 
-func _test_grid_view(view: GridView, model: GridModel) -> void:
+func _test_grid_view(view: GridView, model: GridModel, initial_selection: Vector2i) -> void:
 	var registered_count: int = 0
+	var registered_coordinates: Dictionary = {}
 	for child in view.get_children():
 		var collider := child as StaticBody3D
 		if collider == null or not collider.is_in_group("grid_tile"):
@@ -323,15 +366,33 @@ func _test_grid_view(view: GridView, model: GridModel) -> void:
 		registered_count += 1
 		var coordinate: Vector2i = view.coordinate_from_collider(collider)
 		_expect(model.contains(coordinate), "GridView must recognize each collider it created")
+		_expect(not registered_coordinates.has(coordinate),
+			"GridView must not register duplicate logical cell coordinates")
+		registered_coordinates[coordinate] = true
 		_expect_equal(coordinate, Vector2i(collider.get_meta("tile_x"), collider.get_meta("tile_z")),
 			"registered collider must map back to its logical x/z cell")
 	_expect_equal(registered_count, 144, "GridView must build exactly one collider for each of 144 cells")
+	_expect_equal(registered_coordinates.size(), 144,
+		"GridView must register 144 unique coordinates corresponding to GridModel")
+	var selection_overlay := view.get_node("SelectedTile") as MeshInstance3D
+	_expect(selection_overlay != null, "GridView must create a selection overlay")
+	if selection_overlay != null:
+		var expected_initial_position := view.world_position_for_cell(initial_selection) + Vector3(0.0, 0.07, 0.0)
+		_expect(_vector3_is_equal(selection_overlay.position, expected_initial_position),
+			"GridView must position the initial highlight at the existing selected coordinate")
 	_expect(_vector3_is_equal(view.world_position_for_cell(Vector2i(3, 3)), Vector3(3.5, 0.42, 3.5)),
 		"GridView must map a height-0 cell to the baseline world position")
 	_expect(_vector3_is_equal(view.world_position_for_cell(Vector2i(7, 6)), Vector3(7.5, 1.0, 6.5)),
 		"GridView must map a height-1 cell using GridModel")
 	_expect(_vector3_is_equal(view.world_position_for_cell(Vector2i(9, 4)), Vector3(9.5, 1.58, 4.5)),
 		"GridView must map a height-2 cell using GridModel")
+	var grid_overlay := view.get_node("GridOverlay") as MeshInstance3D
+	_expect(grid_overlay != null and grid_overlay.visible, "GridView grid overlay must start visible")
+	if grid_overlay != null:
+		view.set_grid_visible(false)
+		_expect(not grid_overlay.visible, "GridView must hide the grid overlay on request")
+		view.set_grid_visible(true)
+		_expect(grid_overlay.visible, "GridView must restore the grid overlay on request")
 
 func _find_grid_collider(scene: Node, coordinate: Vector2i) -> StaticBody3D:
 	for candidate in scene.get_tree().get_nodes_in_group("grid_tile"):

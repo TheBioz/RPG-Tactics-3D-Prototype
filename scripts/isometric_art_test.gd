@@ -34,6 +34,9 @@ func _ready() -> void:
 	if not grid_view.configure(grid_model):
 		push_error("IsometricArtTest could not configure GridView from GridModel")
 		return
+	if not grid_view.set_selected_cell(selected_coordinate):
+		push_error("IsometricArtTest could not initialize GridView selection")
+		return
 	prop_root = Node3D.new()
 	prop_root.name = "PaintedProps2D"
 	add_child(prop_root)
