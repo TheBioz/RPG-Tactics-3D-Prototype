@@ -20,13 +20,14 @@ func _run_tests() -> void:
 	_test_baseline_heights()
 	_test_baseline_surfaces()
 	_test_baseline_distributions()
+	await _test_camera_controller()
 	await _test_scene_interactions()
 	if _failures.is_empty():
-		print("R2-B2-A GridView: %d checks passed" % _checks)
+		print("R2-B2-B CameraController/GridView: %d checks passed" % _checks)
 		quit(0)
 		return
 	for failure in _failures:
-		push_error("R2-B2-A: " + failure)
+		push_error("R2-B2-B: " + failure)
 	quit(1)
 
 func _test_refcounted_model_and_cell_count() -> void:
@@ -117,6 +118,110 @@ func _test_baseline_distributions() -> void:
 	_expect_equal(surface_counts[GridModelScript.SurfaceKind.WATER], 9,
 		"baseline WATER distribution must remain 9 cells")
 
+func _test_camera_controller() -> void:
+	var camera := CameraController.new()
+	root.add_child(camera)
+	await process_frame
+	_expect_equal(camera.projection, Camera3D.PROJECTION_ORTHOGONAL,
+		"camera controller must use orthographic projection")
+	_expect_equal(camera.yaw_degrees, 45.0, "camera yaw must match the baseline")
+	_expect_equal(camera.pitch_degrees, 50.0, "camera pitch must match the baseline")
+	_expect_equal(camera.orthographic_size, 17.0, "camera zoom must match the baseline")
+	_expect(_vector3_is_equal(camera.position, _expected_camera_position(45.0, 50.0)),
+		"initial camera position must match the baseline orientation formula")
+	_expect(_vector3_is_equal((-camera.global_basis.z).normalized(),
+		(camera.global_position.direction_to(Vector3(6.0, 0.65, 6.0))).normalized()),
+		"camera forward transform must point at the fixed baseline focus")
+	_expect(is_equal_approx(camera.size, 17.0), "initial effective orthographic size must be 17")
+
+	for yaw in [0.0, 90.0, 180.0, 270.0]:
+		_expect(camera.apply_rotation_deltas(yaw - camera.yaw_degrees, 0.0),
+			"camera must accept each cardinal yaw")
+		_expect(_vector3_is_equal(camera.position, _expected_camera_position(yaw, 50.0)),
+			"cardinal yaw %s must produce the baseline camera position" % yaw)
+		_expect(_vector3_is_equal((-camera.global_basis.z).normalized(),
+			camera.global_position.direction_to(Vector3(6.0, 0.65, 6.0)).normalized()),
+			"cardinal yaw %s must preserve the real camera look transform" % yaw)
+
+	for pitch in [25.0, 50.0, 78.0]:
+		_expect(camera.apply_rotation_deltas(0.0, pitch - camera.pitch_degrees),
+			"camera must accept baseline pitch %s" % pitch)
+		_expect(_vector3_is_equal(camera.position, _expected_camera_position(270.0, pitch)),
+			"pitch %s must produce the baseline camera position" % pitch)
+		_expect(_vector3_is_equal((-camera.global_basis.z).normalized(),
+			camera.global_position.direction_to(Vector3(6.0, 0.65, 6.0)).normalized()),
+			"pitch %s must preserve the real camera look transform" % pitch)
+
+	for zoom in [8.0, 17.0, 24.0]:
+		_expect(camera.apply_zoom_delta(zoom - camera.orthographic_size),
+			"camera must accept baseline zoom %s" % zoom)
+		_expect(is_equal_approx(camera.size, zoom), "zoom %s must update Camera3D.size" % zoom)
+	_expect(camera.apply_rotation_deltas(0.0, 1000.0), "pitch above maximum must clamp")
+	_expect_equal(camera.pitch_degrees, 78.0, "pitch must clamp at 78 degrees")
+	_expect(camera.apply_rotation_deltas(0.0, -1000.0), "pitch below minimum must clamp")
+	_expect_equal(camera.pitch_degrees, 25.0, "pitch must clamp at 25 degrees")
+	_expect(camera.apply_zoom_delta(-1000.0), "zoom below minimum must clamp")
+	_expect_equal(camera.orthographic_size, 8.0, "zoom must clamp at 8")
+	_expect(camera.apply_zoom_delta(1000.0), "zoom above maximum must clamp")
+	_expect_equal(camera.orthographic_size, 24.0, "zoom must clamp at 24")
+	var before_invalid_position: Vector3 = camera.position
+	var before_invalid_yaw: float = camera.yaw_degrees
+	var before_invalid_pitch: float = camera.pitch_degrees
+	var before_invalid_zoom: float = camera.orthographic_size
+	_expect(not camera.apply_rotation_deltas(INF, 1.0), "non-finite yaw delta must be rejected")
+	_expect(not camera.apply_rotation_deltas(1.0, NAN), "non-finite pitch delta must be rejected")
+	_expect(not camera.apply_zoom_delta(INF), "non-finite zoom delta must be rejected")
+	_expect_equal(camera.yaw_degrees, before_invalid_yaw, "invalid yaw input must not partially mutate yaw")
+	_expect_equal(camera.pitch_degrees, before_invalid_pitch, "invalid camera input must not partially mutate pitch")
+	_expect_equal(camera.orthographic_size, before_invalid_zoom, "invalid camera input must not mutate zoom")
+	_expect(_vector3_is_equal(camera.position, before_invalid_position), "invalid inputs must not move camera")
+
+	camera.reset_camera()
+	_expect_equal(camera.yaw_degrees, 45.0, "reset must restore baseline yaw")
+	_expect_equal(camera.pitch_degrees, 50.0, "reset must restore baseline pitch")
+	_expect_equal(camera.orthographic_size, 17.0, "reset must restore baseline zoom")
+	_expect(_vector3_is_equal(camera.position, _expected_camera_position(45.0, 50.0)),
+		"reset must restore the real baseline transform")
+
+	var fast_camera := CameraController.new()
+	var slow_camera := CameraController.new()
+	root.add_child(fast_camera)
+	root.add_child(slow_camera)
+	for _frame in 60:
+		fast_camera.apply_rotation_deltas(CameraController.YAW_DEGREES_PER_SECOND / 60.0,
+			CameraController.PITCH_DEGREES_PER_SECOND / 60.0)
+	for _frame in 30:
+		slow_camera.apply_rotation_deltas(CameraController.YAW_DEGREES_PER_SECOND / 30.0,
+			CameraController.PITCH_DEGREES_PER_SECOND / 30.0)
+	_expect(is_equal_approx(fast_camera.yaw_degrees, slow_camera.yaw_degrees)
+		and is_equal_approx(fast_camera.pitch_degrees, slow_camera.pitch_degrees),
+		"equal simulated input intervals must be frame-rate independent")
+
+	camera.size = 800.0
+	camera.position = _expected_camera_position(45.0, 50.0)
+	camera.look_at(Vector3(6.0, 0.65, 6.0), Vector3.UP)
+	var ray: Dictionary = camera.screen_ray(camera.get_viewport().get_visible_rect().size * 0.5)
+	_expect(not ray.is_empty(), "screen center must produce a picking ray")
+	if not ray.is_empty():
+		var ray_from: Vector3 = ray["from"]
+		var ray_to: Vector3 = ray["to"]
+		_expect(absf(ray_from.distance_to(ray_to) - CameraController.PICK_DISTANCE) < 0.001,
+			"screen picking ray must preserve the 170-unit baseline distance")
+		_expect(ray_from.direction_to(ray_to).dot(camera.global_position.direction_to(Vector3(6.0, 0.65, 6.0))) > 0.999,
+			"center-screen ray must point along camera forward")
+	_expect(camera.screen_ray(Vector2(INF, 0.0)).is_empty(),
+		"non-finite screen coordinate must not produce a ray")
+	fast_camera.queue_free()
+	slow_camera.queue_free()
+	camera.queue_free()
+	await process_frame
+
+func _expected_camera_position(yaw_degrees: float, pitch_degrees: float) -> Vector3:
+	var yaw := deg_to_rad(yaw_degrees)
+	var pitch := deg_to_rad(pitch_degrees)
+	var offset := Vector3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch)) * 24.0
+	return Vector3(6.0, 0.65, 6.0) + offset
+
 func _test_scene_interactions() -> void:
 	var scene := MAIN_SCENE.instantiate()
 	root.add_child(scene)
@@ -124,6 +229,7 @@ func _test_scene_interactions() -> void:
 
 	var model: GridModel = scene.get("grid_model")
 	var grid_view: GridView = scene.get("grid_view")
+	var camera: CameraController = scene.get_node("Camera3D")
 	var hero: Sprite3D = scene.get("hero")
 	var shadow: MeshInstance3D = scene.get("hero_shadow")
 	var selection_overlay: MeshInstance3D = grid_view.get_node("SelectedTile")
@@ -145,6 +251,34 @@ func _test_scene_interactions() -> void:
 
 	_expect_equal(initial_actor, Vector2i(5, 6), "actor logical cell must initialize at (5,6)")
 	_expect_equal(initial_selection, Vector2i(5, 6), "selection must initialize at (5,6)")
+	_expect_equal(camera.yaw_degrees, 45.0, "scene camera must start at baseline yaw")
+	_expect_equal(camera.pitch_degrees, 50.0, "scene camera must start at baseline pitch")
+	_expect_equal(camera.orthographic_size, 17.0, "scene camera must start at baseline zoom")
+	var pick_coordinate := Vector2i(6, 6)
+	var pick_world_position: Vector3 = grid_view.world_position_for_cell(pick_coordinate)
+	var pick_screen_position: Vector2 = camera.unproject_position(pick_world_position)
+	var pick_ray: Dictionary = camera.screen_ray(pick_screen_position)
+	_expect(not pick_ray.is_empty(), "projected real tile coordinate must produce a camera ray")
+	if not pick_ray.is_empty():
+		var pick_query := PhysicsRayQueryParameters3D.create(pick_ray["from"], pick_ray["to"])
+		var pick_hit: Dictionary = scene.get_world_3d().direct_space_state.intersect_ray(pick_query)
+		_expect(not pick_hit.is_empty(), "camera ray must physically intersect the real grid collider")
+		if not pick_hit.is_empty():
+			_expect(scene.call("select_grid_collider", pick_hit.get("collider")),
+				"physical camera hit must select through the existing GridView validation")
+			_expect_equal(scene.get("selected_coordinate"), pick_coordinate,
+				"physical camera hit must select the projected real cell")
+	var selection_before_camera_change: Vector2i = scene.get("selected_coordinate")
+	var actor_before_camera_change: Vector2i = scene.get("actor_coordinate")
+	camera.apply_rotation_deltas(45.0, 10.0)
+	camera.apply_zoom_delta(-2.0)
+	_expect_equal(scene.get("selected_coordinate"), selection_before_camera_change,
+		"camera changes must not mutate selected_coordinate")
+	_expect_equal(scene.get("actor_coordinate"), actor_before_camera_change,
+		"camera changes must not mutate actor_coordinate")
+	camera.reset_camera()
+	_expect(_vector3_is_equal(camera.position, _expected_camera_position(45.0, 50.0)),
+		"scene HOME reset contract must restore camera transform")
 	_expect(imported_height > 0 and initial_pixel_size > 0.0,
 		"initial proxy texture dimensions and scale must be positive")
 	_expect(hero.centered, "Sprite3D pivot must be centered for contact-point calculation")

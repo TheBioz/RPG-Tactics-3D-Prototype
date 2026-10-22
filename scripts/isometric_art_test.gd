@@ -9,12 +9,9 @@ const TEX_BUSH: Texture2D = preload("res://art/bush.svg")
 const TEX_FLOWERS: Texture2D = preload("res://art/flowers.svg")
 const TEX_RUIN: Texture2D = preload("res://art/ruin_arch.svg")
 
-@onready var camera: Camera3D = $Camera3D
+@onready var camera: CameraController = $Camera3D
 var grid_model: GridModel
 var grid_view: GridView
-var camera_yaw: float = 45.0
-var camera_pitch: float = 50.0
-var camera_size: float = 17.0
 var show_grid: bool = true
 var show_billboards: bool = true
 var hero: Sprite3D
@@ -45,7 +42,6 @@ func _ready() -> void:
 		reference_texture = load("res://art/pc001_reference_character.png") as Texture2D
 	_build_world_light()
 	_build_hud()
-	_update_camera()
 	_refresh_hud()
 
 func _spawn_sprite(tex: Texture2D, x: int, z: int, height: float, pixel: float) -> Sprite3D:
@@ -144,42 +140,27 @@ func _build_hud() -> void:
 	bottom.add_theme_color_override("font_color", Color("2c3f4b"))
 	canvas.add_child(bottom)
 
-func _update_camera() -> void:
-	var anchor := Vector3(6, 0.65, 6)
-	var yaw := deg_to_rad(camera_yaw)
-	var pitch := deg_to_rad(camera_pitch)
-	var distance := 24.0
-	var offset := Vector3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch)) * distance
-	camera.position = anchor + offset
-	camera.look_at(anchor, Vector3.UP)
-	camera.size = camera_size
-
 func _process(delta: float) -> void:
-	var changed := false
+	var yaw_delta := 0.0
+	var pitch_delta := 0.0
 	if Input.is_key_pressed(KEY_Q):
-		camera_yaw -= 75.0 * delta
-		changed = true
+		yaw_delta -= CameraController.YAW_DEGREES_PER_SECOND * delta
 	if Input.is_key_pressed(KEY_E):
-		camera_yaw += 75.0 * delta
-		changed = true
+		yaw_delta += CameraController.YAW_DEGREES_PER_SECOND * delta
 	if Input.is_key_pressed(KEY_R):
-		camera_pitch = clampf(camera_pitch + 55.0 * delta, 25.0, 78.0)
-		changed = true
+		pitch_delta += CameraController.PITCH_DEGREES_PER_SECOND * delta
 	if Input.is_key_pressed(KEY_F):
-		camera_pitch = clampf(camera_pitch - 55.0 * delta, 25.0, 78.0)
-		changed = true
-	if changed:
-		_update_camera()
-		_refresh_hud()
+		pitch_delta -= CameraController.PITCH_DEGREES_PER_SECOND * delta
+	if yaw_delta != 0.0 or pitch_delta != 0.0:
+		if camera.apply_rotation_deltas(yaw_delta, pitch_delta):
+			_refresh_hud()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			camera_size = clampf(camera_size - 1.0, 8.0, 24.0)
-			_update_camera()
+			camera.apply_zoom_delta(-1.0)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			camera_size = clampf(camera_size + 1.0, 8.0, 24.0)
-			_update_camera()
+			camera.apply_zoom_delta(1.0)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			_pick_tile(event.position)
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -194,16 +175,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_V:
 			_toggle_actor_reference()
 		elif event.keycode == KEY_HOME:
-			camera_yaw = 45.0
-			camera_pitch = 50.0
-			camera_size = 17.0
-			_update_camera()
+			camera.reset_camera()
 		_refresh_hud()
 
 func _pick_tile(mouse_pos: Vector2) -> void:
-	var from := camera.project_ray_origin(mouse_pos)
-	var to := from + camera.project_ray_normal(mouse_pos) * 170.0
-	var query := PhysicsRayQueryParameters3D.create(from, to)
+	var ray: Dictionary = camera.screen_ray(mouse_pos)
+	if ray.is_empty():
+		return
+	var query := PhysicsRayQueryParameters3D.create(ray["from"], ray["to"])
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		return
@@ -289,4 +268,4 @@ func _refresh_hud() -> void:
 		return
 	var selected_height: int = grid_model.height_level_at(selected_coordinate)
 	assert(selected_height != GridModel.INVALID_HEIGHT, "HUD selection must be valid")
-	hud_text.text = "Casilla: (%d, %d)   Altura: %d\nCam yaw: %.0f°   pitch: %.0f°   zoom: %.1f\nPC-001: proxy anime 2D / facing gráfico a cámara\nFacing lógico de mundo: independiente (por implementar)\nActor: %s" % [selected_coordinate.x, selected_coordinate.y, selected_height, camera_yaw, camera_pitch, camera_size, "Ilustración C0 (NO mini anime)" if use_reference else "Proxy SVG de producción (NO canon)"]
+	hud_text.text = "Casilla: (%d, %d)   Altura: %d\nCam yaw: %.0f°   pitch: %.0f°   zoom: %.1f\nPC-001: proxy anime 2D / facing gráfico a cámara\nFacing lógico de mundo: independiente (por implementar)\nActor: %s" % [selected_coordinate.x, selected_coordinate.y, selected_height, camera.yaw_degrees, camera.pitch_degrees, camera.orthographic_size, "Ilustración C0 (NO mini anime)" if use_reference else "Proxy SVG de producción (NO canon)"]
