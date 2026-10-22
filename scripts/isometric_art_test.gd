@@ -8,6 +8,7 @@ const TEX_TREE_B: Texture2D = preload("res://art/tree_oak.svg")
 const TEX_BUSH: Texture2D = preload("res://art/bush.svg")
 const TEX_FLOWERS: Texture2D = preload("res://art/flowers.svg")
 const TEX_RUIN: Texture2D = preload("res://art/ruin_arch.svg")
+const MOVEMENT_BUDGET: int = 4
 
 @onready var camera: CameraController = $Camera3D
 var grid_model: GridModel
@@ -22,9 +23,13 @@ var prop_root: Node3D
 var hud_text: Label
 var selected_coordinate: Vector2i = Vector2i(5, 6)
 var actor_coordinate: Vector2i = Vector2i(5, 6)
+var movement_command_service: MovementCommandService
+var movement_preview: MovementCommandResult
+var movement_message: String = "Selecciona una casilla para previsualizar una orden."
 
 func _ready() -> void:
 	grid_model = GridModel.new()
+	movement_command_service = MovementCommandService.new(MovementPathfinder.new())
 	grid_view = GridView.new()
 	grid_view.name = "GridView"
 	add_child(grid_view)
@@ -171,7 +176,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			show_billboards = not show_billboards
 			prop_root.visible = show_billboards
 		elif event.keycode == KEY_TAB:
-			_move_proxy()
+			_confirm_move_order()
 		elif event.keycode == KEY_V:
 			_toggle_actor_reference()
 		elif event.keycode == KEY_HOME:
@@ -189,12 +194,12 @@ func _pick_tile(mouse_pos: Vector2) -> void:
 	select_grid_collider(hit.get("collider"))
 
 func select_cell(coordinate: Vector2i) -> bool:
-	if not grid_model.contains(coordinate):
+	if grid_model == null or not grid_model.contains(coordinate):
 		return false
 	if not grid_view.set_selected_cell(coordinate):
 		return false
 	selected_coordinate = coordinate
-	_refresh_hud()
+	_refresh_movement_preview()
 	return true
 
 func select_grid_collider(collider: Object) -> bool:
@@ -205,25 +210,138 @@ func select_grid_collider(collider: Object) -> bool:
 		return false
 	return select_cell(coordinate)
 
+## Direct placement helper retained for legacy regression/setup tests only.
+## Player input must use _confirm_move_order() and MovementCommandService.
 func move_actor_to(coordinate: Vector2i) -> bool:
 	if not grid_model.contains(coordinate):
 		return false
 	if grid_model.surface_kind_at(coordinate) == GridModel.SurfaceKind.WATER:
 		return false
-	if hero == null or hero_shadow == null:
+	if not _set_actor_visual_position(coordinate):
+		return false
+	actor_coordinate = coordinate
+	_refresh_hud()
+	return true
+
+func _refresh_movement_preview() -> void:
+	if movement_command_service == null or grid_model == null or grid_view == null:
+		movement_preview = null
+		movement_message = "Servicio o cuadrícula no disponible."
+		if grid_view != null:
+			grid_view.clear_route_preview()
+		_refresh_hud()
+		return
+	var occupied: Array[Vector2i] = [actor_coordinate]
+	movement_preview = movement_command_service.evaluate(
+		grid_model, actor_coordinate, selected_coordinate, occupied, MOVEMENT_BUDGET
+	)
+	if movement_preview.is_accepted():
+		if grid_view.set_route_preview(movement_preview.path):
+			movement_message = _accepted_movement_message(movement_preview)
+		else:
+			movement_message = "No se pudo representar la ruta previsualizada."
+	else:
+		grid_view.clear_route_preview()
+		movement_message = _movement_rejection_message(movement_preview)
+	_refresh_hud()
+
+func _confirm_move_order() -> bool:
+	if movement_command_service == null or grid_model == null or grid_view == null:
+		movement_message = "Servicio o cuadrícula no disponible."
+		_refresh_hud()
+		return false
+	var occupied: Array[Vector2i] = [actor_coordinate]
+	var confirmation := movement_command_service.evaluate(
+		grid_model, actor_coordinate, selected_coordinate, occupied, MOVEMENT_BUDGET
+	)
+	movement_preview = confirmation
+	if not confirmation.is_accepted():
+		grid_view.clear_route_preview()
+		movement_message = _movement_rejection_message(confirmation)
+		_refresh_hud()
+		return false
+	if selected_coordinate == actor_coordinate:
+		grid_view.clear_route_preview()
+		movement_message = "El actor ya está en esa casilla (coste 0)."
+		_refresh_hud()
+		return true
+	var presentation_error := _movement_presentation_error(selected_coordinate)
+	if not presentation_error.is_empty():
+		grid_view.clear_route_preview()
+		movement_message = presentation_error
+		_refresh_hud()
+		return false
+	if not _set_actor_visual_position(selected_coordinate):
+		grid_view.clear_route_preview()
+		movement_message = "No se pudo colocar el actor y su sombra; orden no aplicada."
+		_refresh_hud()
+		return false
+	actor_coordinate = selected_coordinate
+	grid_view.clear_route_preview()
+	movement_message = "Movimiento confirmado: coste %d/%d." % [confirmation.total_cost, MOVEMENT_BUDGET]
+	_refresh_hud()
+	return true
+
+func _movement_presentation_error(destination: Vector2i) -> String:
+	if grid_view == null or not is_instance_valid(grid_view) or grid_view.grid_model != grid_model:
+		return "GridView no está disponible."
+	if not grid_model.contains(destination):
+		return "Destino fuera de la cuadrícula."
+	if not is_instance_valid(hero) or not hero.is_inside_tree():
+		return "El proxy del actor no está disponible."
+	if not is_instance_valid(hero_shadow) or not hero_shadow.is_inside_tree():
+		return "La sombra del actor no está disponible."
+	if not is_instance_valid(prop_root) or not prop_root.visible or not hero.is_visible_in_tree() \
+			or not hero_shadow.is_visible_in_tree():
+		return "Activa los props (B) para mostrar el movimiento."
+	if _sprite_half_height(hero.texture, hero.pixel_size) <= 0.0:
+		return "La textura o escala del proxy no permite presentar el movimiento."
+	return ""
+
+func _set_actor_visual_position(coordinate: Vector2i) -> bool:
+	if grid_model == null or not is_instance_valid(grid_view) or not grid_model.contains(coordinate):
+		return false
+	if not is_instance_valid(hero) or not is_instance_valid(hero_shadow):
 		return false
 	var half_height: float = _sprite_half_height(hero.texture, hero.pixel_size)
 	if half_height <= 0.0:
 		return false
-	var at := grid_view.world_position_for_cell(coordinate)
-	actor_coordinate = coordinate
-	hero.position = at + Vector3(0, half_height, 0)
-	hero_shadow.position = at + Vector3(0, 0.048, 0)
-	_refresh_hud()
+	var surface_position: Vector3 = grid_view.world_position_for_cell(coordinate)
+	var hero_position := surface_position + Vector3(0.0, half_height, 0.0)
+	var shadow_position := surface_position + Vector3(0.0, 0.048, 0.0)
+	hero.position = hero_position
+	hero_shadow.position = shadow_position
 	return true
 
-func _move_proxy() -> void:
-	move_actor_to(selected_coordinate)
+func _accepted_movement_message(result: MovementCommandResult) -> String:
+	if result.path.size() <= 1:
+		return "El actor ya está en esa casilla (coste 0)."
+	return "Ruta disponible: coste %d/%d. TAB confirma." % [result.total_cost, MOVEMENT_BUDGET]
+
+func _movement_rejection_message(result: MovementCommandResult) -> String:
+	match result.status:
+		MovementCommandResult.Status.INVALID_MODEL:
+			return "No hay un modelo de cuadrícula válido."
+		MovementCommandResult.Status.INVALID_START:
+			return "El origen del actor no es válido."
+		MovementCommandResult.Status.INVALID_DESTINATION:
+			return "El destino está fuera de la cuadrícula."
+		MovementCommandResult.Status.INVALID_BUDGET:
+			return "El presupuesto de movimiento no es válido."
+		MovementCommandResult.Status.IMPASSABLE_START:
+			return "El actor no puede iniciar desde esa casilla."
+		MovementCommandResult.Status.ILLEGAL_DESTINATION:
+			return "Destino intransitable (agua o datos de casilla inválidos)."
+		MovementCommandResult.Status.DESTINATION_OCCUPIED:
+			return "El destino está ocupado."
+		MovementCommandResult.Status.NO_PATH:
+			return "No existe una ruta legal hasta el destino."
+		MovementCommandResult.Status.INSUFFICIENT_BUDGET:
+			return "Coste %d: supera el presupuesto %d." % [result.total_cost, MOVEMENT_BUDGET]
+		MovementCommandResult.Status.INCONSISTENT_PATHFINDER_RESULT:
+			return "El cálculo de ruta devolvió un resultado inconsistente."
+		_:
+			return "Orden de movimiento rechazada."
 
 func apply_actor_texture(texture: Texture2D) -> bool:
 	if texture == null or hero == null or hero_shadow == null:
@@ -269,3 +387,7 @@ func _refresh_hud() -> void:
 	var selected_height: int = grid_model.height_level_at(selected_coordinate)
 	assert(selected_height != GridModel.INVALID_HEIGHT, "HUD selection must be valid")
 	hud_text.text = "Casilla: (%d, %d)   Altura: %d\nCam yaw: %.0f°   pitch: %.0f°   zoom: %.1f\nPC-001: proxy anime 2D / facing gráfico a cámara\nFacing lógico de mundo: independiente (por implementar)\nActor: %s" % [selected_coordinate.x, selected_coordinate.y, selected_height, camera.yaw_degrees, camera.pitch_degrees, camera.orthographic_size, "Ilustración C0 (NO mini anime)" if use_reference else "Proxy SVG de producción (NO canon)"]
+	hud_text.text += "\nActor lógico: (%d, %d)   Presupuesto provisional: %d" % [
+		actor_coordinate.x, actor_coordinate.y, MOVEMENT_BUDGET,
+	]
+	hud_text.text += "\nMovimiento: %s" % movement_message
