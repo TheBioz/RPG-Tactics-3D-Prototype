@@ -3,6 +3,7 @@ extends SceneTree
 
 const GridModelScript = preload("res://scripts/r2/grid_model.gd")
 const MovementPathfinderTestsScript = preload("res://tests/r2/test_movement_pathfinder.gd")
+const MovementCommandTestsScript = preload("res://tests/r2/test_movement_command.gd")
 const MAIN_SCENE: PackedScene = preload("res://scenes/IsometricArtTest.tscn")
 
 const CELL_SIZE: float = 1.0
@@ -25,10 +26,14 @@ func _run_tests() -> void:
 	var movement_summary: Dictionary = movement_tests.run()
 	_checks += int(movement_summary["checks"])
 	_failures.append_array(movement_summary["failures"])
+	var command_tests = MovementCommandTestsScript.new()
+	var command_summary: Dictionary = command_tests.run()
+	_checks += int(command_summary["checks"])
+	_failures.append_array(command_summary["failures"])
 	await _test_camera_controller()
 	await _test_scene_interactions()
 	if _failures.is_empty():
-		print("R2-05A movement + R2-B2-B regression: %d checks passed" % _checks)
+		print("R2-05A/B movement + R2-B2-B regression: %d checks passed" % _checks)
 		quit(0)
 		return
 	for failure in _failures:

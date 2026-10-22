@@ -87,7 +87,7 @@ func _test_rejections_and_pathfinder_reasons() -> void:
 	_expect_equal(water.pathfinder_status, MovementPathResult.Status.IMPASSABLE_DESTINATION,
 		"illegal destination must retain pathfinder reason")
 	var no_path := _service.evaluate(_model, Vector2i(3, 5), Vector2i(5, 5),
-		[Vector2i(4, 5), Vector2i(3, 4), Vector2i(3, 6)], 4)
+		[Vector2i(4, 5), Vector2i(3, 4), Vector2i(3, 6), Vector2i(2, 5)], 4)
 	_expect_equal(no_path.status, MovementCommandResult.Status.NO_PATH,
 		"blocked route must report no path")
 	_expect_equal(no_path.pathfinder_status, MovementPathResult.Status.NO_PATH,
@@ -111,18 +111,22 @@ func _test_malformed_pathfinder_results() -> void:
 	_expect_inconsistent(wrong_kind, origin, destination, "wrong query kind")
 	_expect_inconsistent(_stub_result(null), origin, destination, "null pathfinder response")
 
-	var routes: Array[Array] = [
-		[Vector2i(4, 5), destination],
-		[origin, Vector2i(4, 4), destination],
-		[origin, Vector2i(4, 5), Vector2i(4, 5), destination],
-		[origin, Vector2i(5, 5), destination],
-	]
-	var descriptions: Array[String] = ["wrong first endpoint", "diagonal step", "repeated coordinate", "wrong last endpoint"]
-	for index in routes.size():
-		var fake := _stub_result(MovementPathResult.new(
-			MovementPathResult.QueryKind.PATH, MovementPathResult.Status.SUCCESS, 2, routes[index]
-		))
-		_expect_inconsistent(fake, origin, destination, descriptions[index])
+	var wrong_first: Array[Vector2i] = [Vector2i(4, 5), destination]
+	_expect_inconsistent(_stub_result(MovementPathResult.new(
+		MovementPathResult.QueryKind.PATH, MovementPathResult.Status.SUCCESS, 1, wrong_first
+	)), origin, destination, "wrong first endpoint")
+	var diagonal: Array[Vector2i] = [origin, Vector2i(4, 4), destination]
+	_expect_inconsistent(_stub_result(MovementPathResult.new(
+		MovementPathResult.QueryKind.PATH, MovementPathResult.Status.SUCCESS, 2, diagonal
+	)), origin, destination, "diagonal step")
+	var repeated: Array[Vector2i] = [origin, Vector2i(4, 5), Vector2i(4, 5), destination]
+	_expect_inconsistent(_stub_result(MovementPathResult.new(
+		MovementPathResult.QueryKind.PATH, MovementPathResult.Status.SUCCESS, 3, repeated
+	)), origin, destination, "repeated coordinate")
+	var wrong_last: Array[Vector2i] = [origin, Vector2i(4, 5), Vector2i(4, 6)]
+	_expect_inconsistent(_stub_result(MovementPathResult.new(
+		MovementPathResult.QueryKind.PATH, MovementPathResult.Status.SUCCESS, 2, wrong_last
+	)), origin, destination, "wrong last endpoint")
 
 	var mismatched_cost := _stub_result(MovementPathResult.new(
 		MovementPathResult.QueryKind.PATH, MovementPathResult.Status.SUCCESS, 99,
@@ -167,7 +171,7 @@ func _test_validation_cost_and_non_mutation() -> void:
 	_expect_equal(occupied, occupied_before, "service must not mutate occupancy input")
 
 	var unavailable := _service.evaluate(_model, Vector2i(3, 5), Vector2i(5, 5),
-		[Vector2i(4, 5), Vector2i(3, 4), Vector2i(3, 6)], 4)
+		[Vector2i(4, 5), Vector2i(3, 4), Vector2i(3, 6), Vector2i(2, 5)], 4)
 	_expect(not unavailable.is_accepted(), "failed route validation must not accept a command")
 	_expect_equal(_snapshot_model(_model), model_before, "failed service evaluation must not mutate model")
 
