@@ -9,6 +9,14 @@ const TEX_BUSH: Texture2D = preload("res://art/bush.svg")
 const TEX_FLOWERS: Texture2D = preload("res://art/flowers.svg")
 const TEX_RUIN: Texture2D = preload("res://art/ruin_arch.svg")
 const MOVEMENT_BUDGET: int = 4
+const MOVEMENT_STEP_DURATION_SECONDS: float = 0.2
+const STEP_HORIZONTAL_APPROACH_FRACTION: float = 0.4
+const STEP_ELEVATION_CHANGE_FRACTION: float = 0.2
+
+enum MovementState {
+	IDLE,
+	MOVING,
+}
 
 @onready var camera: CameraController = $Camera3D
 var grid_model: GridModel
@@ -26,6 +34,12 @@ var actor_coordinate: Vector2i = Vector2i(5, 6)
 var movement_command_service: MovementCommandService
 var movement_preview: MovementCommandResult
 var movement_message: String = "Selecciona una casilla para previsualizar una orden."
+var movement_state: MovementState = MovementState.IDLE
+var accepted_path: Array[Vector2i] = []
+var _movement_segment_index: int = 0
+var _movement_segment_elapsed: float = 0.0
+var _movement_sprite_half_height: float = 0.0
+var _accepted_destination_surface: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
 	grid_model = GridModel.new()
@@ -146,6 +160,8 @@ func _build_hud() -> void:
 	canvas.add_child(bottom)
 
 func _process(delta: float) -> void:
+	if movement_state == MovementState.MOVING:
+		_advance_movement(delta)
 	var yaw_delta := 0.0
 	var pitch_delta := 0.0
 	if Input.is_key_pressed(KEY_Q):
@@ -166,18 +182,24 @@ func _unhandled_input(event: InputEvent) -> void:
 			camera.apply_zoom_delta(-1.0)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			camera.apply_zoom_delta(1.0)
-		elif event.button_index == MOUSE_BUTTON_LEFT:
+		elif event.button_index == MOUSE_BUTTON_LEFT and movement_state == MovementState.IDLE:
 			_pick_tile(event.position)
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_G:
 			show_grid = not show_grid
 			grid_view.set_grid_visible(show_grid)
 		elif event.keycode == KEY_B:
+			if movement_state == MovementState.MOVING:
+				return
 			show_billboards = not show_billboards
 			prop_root.visible = show_billboards
 		elif event.keycode == KEY_TAB:
+			if movement_state == MovementState.MOVING:
+				return
 			_confirm_move_order()
 		elif event.keycode == KEY_V:
+			if movement_state == MovementState.MOVING:
+				return
 			_toggle_actor_reference()
 		elif event.keycode == KEY_HOME:
 			camera.reset_camera()
@@ -194,6 +216,8 @@ func _pick_tile(mouse_pos: Vector2) -> void:
 	select_grid_collider(hit.get("collider"))
 
 func select_cell(coordinate: Vector2i) -> bool:
+	if movement_state == MovementState.MOVING:
+		return false
 	if grid_model == null or not grid_model.contains(coordinate):
 		return false
 	if not grid_view.set_selected_cell(coordinate):
@@ -213,6 +237,8 @@ func select_grid_collider(collider: Object) -> bool:
 ## Direct placement helper retained for legacy regression/setup tests only.
 ## Player input must use _confirm_move_order() and MovementCommandService.
 func move_actor_to(coordinate: Vector2i) -> bool:
+	if movement_state == MovementState.MOVING:
+		return false
 	if not grid_model.contains(coordinate):
 		return false
 	if grid_model.surface_kind_at(coordinate) == GridModel.SurfaceKind.WATER:
@@ -224,6 +250,8 @@ func move_actor_to(coordinate: Vector2i) -> bool:
 	return true
 
 func _refresh_movement_preview() -> void:
+	if movement_state == MovementState.MOVING:
+		return
 	if movement_command_service == null or grid_model == null or grid_view == null:
 		movement_preview = null
 		movement_message = "Servicio o cuadrícula no disponible."
@@ -246,6 +274,9 @@ func _refresh_movement_preview() -> void:
 	_refresh_hud()
 
 func _confirm_move_order() -> bool:
+	if movement_state == MovementState.MOVING:
+		return false
+	movement_preview = null
 	if movement_command_service == null or grid_model == null or grid_view == null:
 		movement_message = "Servicio o cuadrícula no disponible."
 		_refresh_hud()
@@ -254,33 +285,167 @@ func _confirm_move_order() -> bool:
 	var confirmation := movement_command_service.evaluate(
 		grid_model, actor_coordinate, selected_coordinate, occupied, MOVEMENT_BUDGET
 	)
-	movement_preview = confirmation
 	if not confirmation.is_accepted():
+		movement_preview = null
 		grid_view.clear_route_preview()
 		movement_message = _movement_rejection_message(confirmation)
 		_refresh_hud()
 		return false
 	if selected_coordinate == actor_coordinate:
+		movement_preview = null
 		grid_view.clear_route_preview()
 		movement_message = "El actor ya está en esa casilla (coste 0)."
 		_refresh_hud()
 		return true
 	var presentation_error := _movement_presentation_error(selected_coordinate)
 	if not presentation_error.is_empty():
+		movement_preview = null
 		grid_view.clear_route_preview()
 		movement_message = presentation_error
 		_refresh_hud()
 		return false
-	if not _set_actor_visual_position(selected_coordinate):
+	var initial_half_height: float = _sprite_half_height(hero.texture, hero.pixel_size)
+	if initial_half_height <= 0.0 or not _set_actor_visual_position(actor_coordinate):
+		movement_preview = null
 		grid_view.clear_route_preview()
-		movement_message = "No se pudo colocar el actor y su sombra; orden no aplicada."
+		movement_message = "No se pudo sincronizar la pose inicial; orden no aplicada."
 		_refresh_hud()
 		return false
+	if not grid_view.set_route_preview(confirmation.path):
+		movement_preview = null
+		grid_view.clear_route_preview()
+		movement_message = "No se pudo mostrar la ruta aprobada; orden no aplicada."
+		_refresh_hud()
+		return false
+	accepted_path = confirmation.path.duplicate()
+	_accepted_destination_surface = grid_view.world_position_for_cell(selected_coordinate)
+	_movement_segment_index = 0
+	_movement_segment_elapsed = 0.0
+	_movement_sprite_half_height = initial_half_height
+	movement_preview = null
+	movement_state = MovementState.MOVING
 	actor_coordinate = selected_coordinate
-	grid_view.clear_route_preview()
-	movement_message = "Movimiento confirmado: coste %d/%d." % [confirmation.total_cost, MOVEMENT_BUDGET]
+	movement_message = "Movimiento en curso: coste %d/%d." % [confirmation.total_cost, MOVEMENT_BUDGET]
 	_refresh_hud()
 	return true
+
+func _advance_movement(delta: float) -> void:
+	if movement_state != MovementState.MOVING or not is_finite(delta) or delta <= 0.0:
+		return
+	if not _movement_visual_resources_are_valid():
+		_abort_movement_presentation("Faltan recursos visuales durante el movimiento.")
+		return
+	if accepted_path.size() < 2 or _movement_segment_index >= accepted_path.size() - 1:
+		_abort_movement_presentation("La ruta aceptada perdió su estructura.")
+		return
+	var remaining_delta: float = delta
+	while remaining_delta > 0.0 and movement_state == MovementState.MOVING:
+		var segment_remaining := MOVEMENT_STEP_DURATION_SECONDS - _movement_segment_elapsed
+		var segment_delta := minf(remaining_delta, segment_remaining)
+		_movement_segment_elapsed += segment_delta
+		remaining_delta -= segment_delta
+		var progress := clampf(_movement_segment_elapsed / MOVEMENT_STEP_DURATION_SECONDS, 0.0, 1.0)
+		if not _apply_movement_segment(_movement_segment_index, progress):
+			_abort_movement_presentation("No se pudo presentar un tramo de la ruta.")
+			return
+		if _movement_segment_elapsed >= MOVEMENT_STEP_DURATION_SECONDS:
+			_movement_segment_index += 1
+			_movement_segment_elapsed = 0.0
+			if _movement_segment_index >= accepted_path.size() - 1:
+				_complete_movement_presentation()
+				return
+
+func _apply_movement_segment(segment_index: int, progress: float) -> bool:
+	if not _movement_visual_resources_are_valid():
+		return false
+	var source := grid_view.world_position_for_cell(accepted_path[segment_index])
+	var destination := grid_view.world_position_for_cell(accepted_path[segment_index + 1])
+	var actor_x: float
+	var actor_z: float
+	var actor_surface_y: float
+	var shadow_surface_y: float
+	if is_equal_approx(source.y, destination.y):
+		var flat_position := source.lerp(destination, progress)
+		actor_x = flat_position.x
+		actor_z = flat_position.z
+		actor_surface_y = source.y
+		shadow_surface_y = source.y
+	else:
+		var edge_x := (source.x + destination.x) * 0.5
+		var edge_z := (source.z + destination.z) * 0.5
+		if progress < STEP_HORIZONTAL_APPROACH_FRACTION:
+			var approach := progress / STEP_HORIZONTAL_APPROACH_FRACTION
+			actor_x = lerpf(source.x, edge_x, approach)
+			actor_z = lerpf(source.z, edge_z, approach)
+			actor_surface_y = source.y
+			shadow_surface_y = source.y
+		elif progress < STEP_HORIZONTAL_APPROACH_FRACTION + STEP_ELEVATION_CHANGE_FRACTION:
+			var transition_progress := (progress - STEP_HORIZONTAL_APPROACH_FRACTION) \
+				/ STEP_ELEVATION_CHANGE_FRACTION
+			var eased_transition := transition_progress * transition_progress \
+				* (3.0 - 2.0 * transition_progress)
+			actor_x = edge_x
+			actor_z = edge_z
+			actor_surface_y = lerpf(source.y, destination.y, eased_transition)
+			shadow_surface_y = source.y
+		else:
+			var departure_start := STEP_HORIZONTAL_APPROACH_FRACTION + STEP_ELEVATION_CHANGE_FRACTION
+			var departure := (progress - departure_start) / (1.0 - departure_start)
+			actor_x = lerpf(edge_x, destination.x, departure)
+			actor_z = lerpf(edge_z, destination.z, departure)
+			actor_surface_y = destination.y
+			shadow_surface_y = destination.y
+	var actor_position := Vector3(actor_x, actor_surface_y + _movement_sprite_half_height, actor_z)
+	var shadow_position := Vector3(actor_x, shadow_surface_y + 0.048, actor_z)
+	hero.position = actor_position
+	hero_shadow.position = shadow_position
+	return true
+
+func _movement_visual_resources_are_valid() -> bool:
+	return is_instance_valid(grid_view) and grid_view.grid_model == grid_model \
+		and is_instance_valid(hero) and hero.is_inside_tree() \
+		and is_instance_valid(hero_shadow) and hero_shadow.is_inside_tree() \
+		and is_instance_valid(prop_root) and prop_root.visible \
+		and hero.is_visible_in_tree() and hero_shadow.is_visible_in_tree() \
+		and hero.texture != null and _movement_sprite_half_height > 0.0
+
+func _complete_movement_presentation() -> void:
+	if not _set_actor_visual_position(actor_coordinate):
+		_abort_movement_presentation("No se pudo sincronizar la pose final.")
+		return
+	accepted_path.clear()
+	_movement_segment_index = 0
+	_movement_segment_elapsed = 0.0
+	_movement_sprite_half_height = 0.0
+	_accepted_destination_surface = Vector3.ZERO
+	movement_preview = null
+	movement_state = MovementState.IDLE
+	grid_view.clear_route_preview()
+	movement_message = "Movimiento completado."
+	_refresh_hud()
+
+func _abort_movement_presentation(message: String) -> void:
+	# The logical destination was committed on acceptance; never roll it back partially.
+	_sync_available_actor_visuals_at_accepted_destination()
+	accepted_path.clear()
+	_movement_segment_index = 0
+	_movement_segment_elapsed = 0.0
+	_movement_sprite_half_height = 0.0
+	_accepted_destination_surface = Vector3.ZERO
+	movement_preview = null
+	movement_state = MovementState.IDLE
+	if is_instance_valid(grid_view):
+		grid_view.clear_route_preview()
+	movement_message = message
+	_refresh_hud()
+
+func _sync_available_actor_visuals_at_accepted_destination() -> void:
+	if is_instance_valid(hero):
+		var half_height := _sprite_half_height(hero.texture, hero.pixel_size)
+		if half_height > 0.0:
+			hero.position = _accepted_destination_surface + Vector3(0.0, half_height, 0.0)
+	if is_instance_valid(hero_shadow):
+		hero_shadow.position = _accepted_destination_surface + Vector3(0.0, 0.048, 0.0)
 
 func _movement_presentation_error(destination: Vector2i) -> String:
 	if grid_view == null or not is_instance_valid(grid_view) or grid_view.grid_model != grid_model:
@@ -344,6 +509,8 @@ func _movement_rejection_message(result: MovementCommandResult) -> String:
 			return "Orden de movimiento rechazada."
 
 func apply_actor_texture(texture: Texture2D) -> bool:
+	if movement_state == MovementState.MOVING:
+		return false
 	if texture == null or hero == null or hero_shadow == null:
 		return false
 	if not grid_model.contains(actor_coordinate):
@@ -382,7 +549,8 @@ func _toggle_actor_reference() -> void:
 		_refresh_hud()
 
 func _refresh_hud() -> void:
-	if hud_text == null:
+	if not is_instance_valid(hud_text) or grid_model == null \
+			or not grid_model.contains(selected_coordinate) or not is_instance_valid(camera):
 		return
 	var selected_height: int = grid_model.height_level_at(selected_coordinate)
 	assert(selected_height != GridModel.INVALID_HEIGHT, "HUD selection must be valid")
