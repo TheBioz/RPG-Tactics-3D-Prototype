@@ -16,6 +16,7 @@ enum Status {
 	DESTINATION_OCCUPIED,
 	NO_PATH,
 	INVALID_BUDGET,
+	INVALID_PATH,
 }
 
 ## PATH uses status, total_cost and path; REACHABILITY uses status and costs_by_coordinate.
