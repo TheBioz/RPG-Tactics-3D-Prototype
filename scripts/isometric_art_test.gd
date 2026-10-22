@@ -10,6 +10,7 @@ const TEX_FLOWERS: Texture2D = preload("res://art/flowers.svg")
 const TEX_RUIN: Texture2D = preload("res://art/ruin_arch.svg")
 const MOVEMENT_BUDGET: int = 4
 const MOVEMENT_STEP_DURATION_SECONDS: float = 0.2
+const MOVEMENT_TIME_EPSILON_SECONDS: float = 0.000001
 const STEP_HORIZONTAL_APPROACH_FRACTION: float = 0.4
 const STEP_ELEVATION_CHANGE_FRACTION: float = 0.2
 
@@ -348,7 +349,11 @@ func _advance_movement(delta: float) -> void:
 		if not _apply_movement_segment(_movement_segment_index, progress):
 			_abort_movement_presentation("No se pudo presentar un tramo de la ruta.")
 			return
-		if _movement_segment_elapsed >= MOVEMENT_STEP_DURATION_SECONDS:
+		if _movement_segment_elapsed + MOVEMENT_TIME_EPSILON_SECONDS >= MOVEMENT_STEP_DURATION_SECONDS:
+			_movement_segment_elapsed = MOVEMENT_STEP_DURATION_SECONDS
+			if not _apply_movement_segment(_movement_segment_index, 1.0):
+				_abort_movement_presentation("No se pudo sincronizar el final de un tramo.")
+				return
 			_movement_segment_index += 1
 			_movement_segment_elapsed = 0.0
 			if _movement_segment_index >= accepted_path.size() - 1:
@@ -402,12 +407,16 @@ func _apply_movement_segment(segment_index: int, progress: float) -> bool:
 	return true
 
 func _movement_visual_resources_are_valid() -> bool:
+	if not is_instance_valid(hero) or hero.texture == null:
+		return false
+	var current_half_height: float = _sprite_half_height(hero.texture, hero.pixel_size)
 	return is_instance_valid(grid_view) and grid_view.grid_model == grid_model \
-		and is_instance_valid(hero) and hero.is_inside_tree() \
+		and hero.is_inside_tree() \
 		and is_instance_valid(hero_shadow) and hero_shadow.is_inside_tree() \
 		and is_instance_valid(prop_root) and prop_root.visible \
 		and hero.is_visible_in_tree() and hero_shadow.is_visible_in_tree() \
-		and hero.texture != null and _movement_sprite_half_height > 0.0
+		and current_half_height > 0.0 \
+		and is_equal_approx(current_half_height, _movement_sprite_half_height)
 
 func _complete_movement_presentation() -> void:
 	if not _set_actor_visual_position(actor_coordinate):
