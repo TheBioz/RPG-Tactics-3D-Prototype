@@ -20,7 +20,7 @@ func _run_tests() -> void:
 	_test_baseline_heights()
 	_test_baseline_surfaces()
 	_test_baseline_distributions()
-	_test_camera_controller()
+	await _test_camera_controller()
 	await _test_scene_interactions()
 	if _failures.is_empty():
 		print("R2-B2-B CameraController/GridView: %d checks passed" % _checks)
