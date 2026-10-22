@@ -13,25 +13,27 @@ func find_path(
 	occupied_coordinates: Array[Vector2i]
 ) -> MovementPathResult:
 	if model == null or not model.contains(start):
-		return MovementPathResult.new(MovementPathResult.Status.INVALID_START)
+		return _path_result(MovementPathResult.Status.INVALID_START)
 	if not model.contains(destination):
-		return MovementPathResult.new(MovementPathResult.Status.INVALID_DESTINATION)
-	if _is_water(model, start):
-		return MovementPathResult.new(MovementPathResult.Status.IMPASSABLE_START)
-	if _is_water(model, destination):
-		return MovementPathResult.new(MovementPathResult.Status.IMPASSABLE_DESTINATION)
+		return _path_result(MovementPathResult.Status.INVALID_DESTINATION)
+	if not _is_traversable(model, start):
+		return _path_result(MovementPathResult.Status.IMPASSABLE_START)
+	if not _is_traversable(model, destination):
+		return _path_result(MovementPathResult.Status.IMPASSABLE_DESTINATION)
 	var occupied := _make_occupancy_set(occupied_coordinates)
 	if destination != start and occupied.has(destination):
-		return MovementPathResult.new(MovementPathResult.Status.DESTINATION_OCCUPIED)
+		return _path_result(MovementPathResult.Status.DESTINATION_OCCUPIED)
 
 	var search := _dijkstra(model, start, occupied)
 	var distances: Dictionary = search["distances"]
 	if not distances.has(destination):
-		return MovementPathResult.new(MovementPathResult.Status.NO_PATH)
+		return _path_result(MovementPathResult.Status.NO_PATH)
 	var path := _reconstruct_path(start, destination, search["predecessors"])
 	if path.is_empty():
-		return MovementPathResult.new(MovementPathResult.Status.NO_PATH)
-	return MovementPathResult.new(MovementPathResult.Status.SUCCESS, distances[destination], path)
+		return _path_result(MovementPathResult.Status.NO_PATH)
+	return MovementPathResult.new(
+		MovementPathResult.QueryKind.PATH, MovementPathResult.Status.SUCCESS, distances[destination], path
+	)
 
 func reachable_cells(
 	model: GridModel,
@@ -40,11 +42,11 @@ func reachable_cells(
 	budget: int
 ) -> MovementPathResult:
 	if budget < 0:
-		return MovementPathResult.new(MovementPathResult.Status.INVALID_BUDGET)
+		return _reachability_result(MovementPathResult.Status.INVALID_BUDGET)
 	if model == null or not model.contains(start):
-		return MovementPathResult.new(MovementPathResult.Status.INVALID_START)
-	if _is_water(model, start):
-		return MovementPathResult.new(MovementPathResult.Status.IMPASSABLE_START)
+		return _reachability_result(MovementPathResult.Status.INVALID_START)
+	if not _is_traversable(model, start):
+		return _reachability_result(MovementPathResult.Status.IMPASSABLE_START)
 	var occupied := _make_occupancy_set(occupied_coordinates)
 	var distances: Dictionary = _dijkstra(model, start, occupied)["distances"]
 	var affordable_costs: Dictionary = {}
@@ -52,7 +54,13 @@ func reachable_cells(
 		var cost: int = distances[coordinate]
 		if cost <= budget:
 			affordable_costs[coordinate] = cost
-	return MovementPathResult.new(MovementPathResult.Status.SUCCESS, 0, [], affordable_costs)
+	return MovementPathResult.new(
+		MovementPathResult.QueryKind.REACHABILITY,
+		MovementPathResult.Status.SUCCESS,
+		0,
+		[],
+		affordable_costs
+	)
 
 func _dijkstra(model: GridModel, start: Vector2i, occupied: Dictionary) -> Dictionary:
 	var distances: Dictionary = {start: 0}
@@ -67,7 +75,7 @@ func _dijkstra(model: GridModel, start: Vector2i, occupied: Dictionary) -> Dicti
 		settled[current] = true
 		for offset in NEIGHBOR_OFFSETS:
 			var neighbor: Vector2i = current + offset
-			if not model.contains(neighbor) or _is_water(model, neighbor):
+			if not model.contains(neighbor) or not _is_traversable(model, neighbor):
 				continue
 			if occupied.has(neighbor) and neighbor != start:
 				continue
@@ -118,10 +126,32 @@ func _reconstruct_path(start: Vector2i, destination: Vector2i, predecessors: Dic
 
 func _entry_cost(model: GridModel, coordinate: Vector2i) -> int:
 	var surface: int = model.surface_kind_at(coordinate)
-	return 2 if surface == GridModel.SurfaceKind.STONE else 1
+	assert(surface == GridModel.SurfaceKind.GRASS \
+		or surface == GridModel.SurfaceKind.GRASS_B \
+		or surface == GridModel.SurfaceKind.ROAD \
+		or surface == GridModel.SurfaceKind.STONE,
+		"Entry cost requested for a non-traversable surface")
+	if surface == GridModel.SurfaceKind.STONE:
+		return 2
+	return 1
 
-func _is_water(model: GridModel, coordinate: Vector2i) -> bool:
-	return model.surface_kind_at(coordinate) == GridModel.SurfaceKind.WATER
+func _is_traversable(model: GridModel, coordinate: Vector2i) -> bool:
+	var surface: int = model.surface_kind_at(coordinate)
+	var height: int = model.height_level_at(coordinate)
+	if height == GridModel.INVALID_HEIGHT or height < 0 or surface == GridModel.INVALID_SURFACE:
+		return false
+	if surface == GridModel.SurfaceKind.WATER:
+		return false
+	return surface == GridModel.SurfaceKind.GRASS \
+		or surface == GridModel.SurfaceKind.GRASS_B \
+		or surface == GridModel.SurfaceKind.ROAD \
+		or surface == GridModel.SurfaceKind.STONE
+
+func _path_result(status: MovementPathResult.Status) -> MovementPathResult:
+	return MovementPathResult.new(MovementPathResult.QueryKind.PATH, status)
+
+func _reachability_result(status: MovementPathResult.Status) -> MovementPathResult:
+	return MovementPathResult.new(MovementPathResult.QueryKind.REACHABILITY, status)
 
 func _make_occupancy_set(occupied_coordinates: Array[Vector2i]) -> Dictionary:
 	var occupied: Dictionary = {}

@@ -42,13 +42,17 @@ func run() -> Dictionary:
 	_test_determinism_and_non_mutation()
 	_test_reachability_budgets()
 	_test_synthetic_disconnection_and_cost_alternative()
+	_test_invalid_cell_data_and_query_kinds()
 	return {"checks": _checks, "failures": _failures}
 
 func _test_real_map_routes_and_costs() -> void:
 	var same := _pathfinder.find_path(_model, Vector2i(3, 3), Vector2i(3, 3), [])
+	_expect_equal(same.query_kind, MovementPathResult.QueryKind.PATH,
+		"find_path result must identify its query kind")
 	_expect_equal(same.status, MovementPathResult.Status.SUCCESS, "valid same-cell route must succeed")
 	_expect_equal(same.total_cost, 0, "same-cell route must cost zero")
 	_expect_equal(same.path, [Vector2i(3, 3)], "same-cell route must contain only its origin")
+	_expect(same.costs_by_coordinate.is_empty(), "PATH result must leave reachability costs empty")
 
 	var horizontal := _pathfinder.find_path(_model, Vector2i(3, 5), Vector2i(6, 5), [])
 	_expect_route(horizontal, [Vector2i(3, 5), Vector2i(4, 5), Vector2i(5, 5), Vector2i(6, 5)], 3,
@@ -74,6 +78,8 @@ func _test_real_map_routes_and_costs() -> void:
 
 func _test_validation_and_occupancy() -> void:
 	var invalid_start := _pathfinder.find_path(_model, Vector2i(-1, 2), Vector2i(3, 3), [])
+	_expect_equal(invalid_start.query_kind, MovementPathResult.QueryKind.PATH,
+		"failed find_path result must retain PATH query kind")
 	_expect_equal(invalid_start.status, MovementPathResult.Status.INVALID_START,
 		"out-of-bounds origin must have an explicit failure status")
 	var invalid_destination := _pathfinder.find_path(_model, Vector2i(3, 3), Vector2i(12, 3), [])
@@ -141,8 +147,12 @@ func _test_determinism_and_non_mutation() -> void:
 func _test_reachability_budgets() -> void:
 	var start := Vector2i(3, 5)
 	var zero := _pathfinder.reachable_cells(_model, start, [], 0)
+	_expect_equal(zero.query_kind, MovementPathResult.QueryKind.REACHABILITY,
+		"successful reachable_cells result must identify its query kind")
 	_expect_equal(zero.status, MovementPathResult.Status.SUCCESS, "zero budget must be accepted")
 	_expect_equal(zero.costs_by_coordinate, {start: 0}, "zero budget must reach only the valid origin")
+	_expect(zero.path.is_empty() and zero.total_cost == 0,
+		"REACHABILITY result must leave path-only fields empty/zero")
 	var insufficient := _pathfinder.reachable_cells(_model, start, [], 1)
 	_expect_equal(insufficient.costs_by_coordinate.get(Vector2i(5, 5), -1), -1,
 		"insufficient budget must exclude a two-step destination")
@@ -156,6 +166,8 @@ func _test_reachability_budgets() -> void:
 		_expect(int(broad.costs_by_coordinate[coordinate]) <= 6,
 			"reachable set must not contain cells above the movement budget")
 	var negative := _pathfinder.reachable_cells(_model, start, [], -1)
+	_expect_equal(negative.query_kind, MovementPathResult.QueryKind.REACHABILITY,
+		"failed reachable_cells result must retain REACHABILITY query kind")
 	_expect_equal(negative.status, MovementPathResult.Status.INVALID_BUDGET,
 		"negative movement budget must be rejected explicitly")
 	var occupied := _pathfinder.reachable_cells(_model, start, [Vector2i(4, 5)], 4)
@@ -186,6 +198,126 @@ func _test_synthetic_disconnection_and_cost_alternative() -> void:
 		"longer grass detour must beat the direct stone route cost of seven")
 	_expect_equal(_route_cost(cost_fixture, cheaper_detour.path), cheaper_detour.total_cost,
 		"synthetic route cost must reconstruct from independently summed entries")
+
+func _test_invalid_cell_data_and_query_kinds() -> void:
+	var null_path := _pathfinder.find_path(null, Vector2i.ZERO, Vector2i.ONE, [])
+	_expect_equal(null_path.query_kind, MovementPathResult.QueryKind.PATH,
+		"null-model path failure must identify PATH query kind")
+	_expect_equal(null_path.status, MovementPathResult.Status.INVALID_START,
+		"find_path must reject a null model")
+	var null_reachability := _pathfinder.reachable_cells(null, Vector2i.ZERO, [], 1)
+	_expect_equal(null_reachability.query_kind, MovementPathResult.QueryKind.REACHABILITY,
+		"null-model reachability failure must identify REACHABILITY query kind")
+	_expect_equal(null_reachability.status, MovementPathResult.Status.INVALID_START,
+		"reachable_cells must reject a null model")
+
+	var incomplete := SyntheticGridModel.new()
+	incomplete.configure_fixture(3, 1)
+	incomplete.set_fixture_cell(Vector2i(0, 0), 0, GridModel.SurfaceKind.GRASS)
+	var incomplete_before := _snapshot_fixture(incomplete)
+	var missing_destination := _pathfinder.find_path(incomplete, Vector2i(0, 0), Vector2i(1, 0), [])
+	_expect_equal(missing_destination.query_kind, MovementPathResult.QueryKind.PATH,
+		"incomplete-model path failure must identify PATH")
+	_expect_equal(missing_destination.status, MovementPathResult.Status.IMPASSABLE_DESTINATION,
+		"in-bounds but unconfigured destination data must be rejected")
+	var partial_reachable := _pathfinder.reachable_cells(incomplete, Vector2i(0, 0), [], 5)
+	_expect_equal(partial_reachable.query_kind, MovementPathResult.QueryKind.REACHABILITY,
+		"incomplete-model reachability success must identify REACHABILITY")
+	_expect_equal(partial_reachable.costs_by_coordinate, {Vector2i(0, 0): 0},
+		"reachability must not include unconfigured cells")
+	_expect_equal(_snapshot_fixture(incomplete), incomplete_before,
+		"queries over a partially configured model must not mutate it")
+
+	for invalid_surface in [GridModel.INVALID_SURFACE, 99]:
+		var invalid_surface_fixture := _new_fixture(3, 1)
+		invalid_surface_fixture.set_fixture_cell(Vector2i(1, 0), 0, invalid_surface)
+		_expect_invalid_intermediate(invalid_surface_fixture,
+			"invalid surface %d" % invalid_surface)
+	var invalid_height_fixture := _new_fixture(3, 1)
+	invalid_height_fixture.set_fixture_cell(Vector2i(1, 0), GridModel.INVALID_HEIGHT, GridModel.SurfaceKind.GRASS)
+	_expect_invalid_intermediate(invalid_height_fixture, "INVALID_HEIGHT intermediate")
+	var negative_height_fixture := _new_fixture(3, 1)
+	negative_height_fixture.set_fixture_cell(Vector2i(1, 0), -2, GridModel.SurfaceKind.GRASS)
+	_expect_invalid_intermediate(negative_height_fixture, "negative-height intermediate")
+
+	var invalid_start_fixture := _new_fixture(2, 1)
+	invalid_start_fixture.set_fixture_cell(Vector2i(0, 0), 0, 99)
+	var invalid_start_path := _pathfinder.find_path(invalid_start_fixture,
+		Vector2i(0, 0), Vector2i(1, 0), [])
+	_expect_equal(invalid_start_path.status, MovementPathResult.Status.IMPASSABLE_START,
+		"unknown surface at origin must be rejected")
+	var invalid_start_reach := _pathfinder.reachable_cells(invalid_start_fixture, Vector2i(0, 0), [], 2)
+	_expect_equal(invalid_start_reach.status, MovementPathResult.Status.IMPASSABLE_START,
+		"reachability must reject unknown surface at origin")
+	_expect(invalid_start_path.path.is_empty() and invalid_start_path.total_cost == 0,
+		"failed PATH result must not contain a route or cost")
+	_expect(invalid_start_reach.costs_by_coordinate.is_empty(),
+		"failed REACHABILITY result must not contain partial reachable costs")
+	var invalid_height_start_fixture := _new_fixture(2, 1)
+	invalid_height_start_fixture.set_fixture_cell(Vector2i(0, 0), GridModel.INVALID_HEIGHT,
+		GridModel.SurfaceKind.GRASS)
+	var invalid_height_start := _pathfinder.find_path(invalid_height_start_fixture,
+		Vector2i(0, 0), Vector2i(1, 0), [])
+	_expect_equal(invalid_height_start.status, MovementPathResult.Status.IMPASSABLE_START,
+		"INVALID_HEIGHT at origin must be rejected")
+	var invalid_height_start_reach := _pathfinder.reachable_cells(invalid_height_start_fixture,
+		Vector2i(0, 0), [], 2)
+	_expect_equal(invalid_height_start_reach.status, MovementPathResult.Status.IMPASSABLE_START,
+		"reachability must reject INVALID_HEIGHT at origin")
+
+	var invalid_destination_fixture := _new_fixture(2, 1)
+	invalid_destination_fixture.set_fixture_cell(Vector2i(1, 0), -3, GridModel.SurfaceKind.GRASS)
+	var invalid_destination := _pathfinder.find_path(invalid_destination_fixture,
+		Vector2i(0, 0), Vector2i(1, 0), [])
+	_expect_equal(invalid_destination.status, MovementPathResult.Status.IMPASSABLE_DESTINATION,
+		"negative height at destination must be rejected")
+	var tall_fixture := _new_fixture(2, 1)
+	tall_fixture.set_fixture_cell(Vector2i(0, 0), 8, GridModel.SurfaceKind.GRASS)
+	tall_fixture.set_fixture_cell(Vector2i(1, 0), 9, GridModel.SurfaceKind.GRASS)
+	var tall_route := _pathfinder.find_path(tall_fixture, Vector2i(0, 0), Vector2i(1, 0), [])
+	_expect_route(tall_route, [Vector2i(0, 0), Vector2i(1, 0)], 2,
+		"nonnegative heights above the current map maximum must remain valid")
+
+	var failure_model_before := _snapshot_model(_model)
+	var failure_occupancy: Array[Vector2i] = [Vector2i(4, 5)]
+	var failure_occupancy_before := failure_occupancy.duplicate()
+	var occupied_failure := _pathfinder.find_path(_model,
+		Vector2i(3, 5), Vector2i(4, 5), failure_occupancy)
+	_expect_equal(occupied_failure.status, MovementPathResult.Status.DESTINATION_OCCUPIED,
+		"failed path query must preserve existing occupancy validation")
+	var invalid_reach_failure := _pathfinder.reachable_cells(_model, Vector2i(0, 0), failure_occupancy, 4)
+	_expect_equal(invalid_reach_failure.status, MovementPathResult.Status.IMPASSABLE_START,
+		"failed reachability query must preserve impassable-origin validation")
+	_expect_equal(_snapshot_model(_model), failure_model_before,
+		"failed queries must not mutate the real GridModel")
+	_expect_equal(failure_occupancy, failure_occupancy_before,
+		"failed queries must not mutate occupied coordinates")
+
+func _expect_invalid_intermediate(fixture: SyntheticGridModel, message: String) -> void:
+	var fixture_before := _snapshot_fixture(fixture)
+	var route := _pathfinder.find_path(fixture, Vector2i(0, 0), Vector2i(2, 0), [])
+	_expect_equal(route.query_kind, MovementPathResult.QueryKind.PATH,
+		message + " failed route must identify PATH")
+	_expect_equal(route.status, MovementPathResult.Status.NO_PATH,
+		message + " must block the only route")
+	_expect(route.path.is_empty(), message + " failure must not expose a partial route")
+	var reachable := _pathfinder.reachable_cells(fixture, Vector2i(0, 0), [], 10)
+	_expect_equal(reachable.query_kind, MovementPathResult.QueryKind.REACHABILITY,
+		message + " reachability must identify its query kind")
+	_expect_equal(reachable.status, MovementPathResult.Status.SUCCESS,
+		message + " must leave a valid reachability query successful")
+	_expect_equal(reachable.costs_by_coordinate, {Vector2i(0, 0): 0},
+		message + " must not make invalid intermediate/destination reachable")
+	_expect_equal(_snapshot_fixture(fixture), fixture_before,
+		message + " queries must not mutate the fixture")
+
+func _snapshot_fixture(fixture: SyntheticGridModel) -> Dictionary:
+	return {
+		"heights": fixture.fixture_heights.duplicate(true),
+		"surfaces": fixture.fixture_surfaces.duplicate(true),
+		"width": fixture.fixture_width,
+		"depth": fixture.fixture_depth,
+	}
 
 func _new_fixture(width: int, depth: int) -> SyntheticGridModel:
 	var fixture := SyntheticGridModel.new()
