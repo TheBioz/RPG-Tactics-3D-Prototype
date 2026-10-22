@@ -2,6 +2,7 @@ extends SceneTree
 ## Minimal dependency-free test runner for the R2 logical grid model.
 
 const GridModelScript = preload("res://scripts/r2/grid_model.gd")
+const MovementPathfinderTestsScript = preload("res://tests/r2/test_movement_pathfinder.gd")
 const MAIN_SCENE: PackedScene = preload("res://scenes/IsometricArtTest.tscn")
 
 const CELL_SIZE: float = 1.0
@@ -20,10 +21,14 @@ func _run_tests() -> void:
 	_test_baseline_heights()
 	_test_baseline_surfaces()
 	_test_baseline_distributions()
+	var movement_tests = MovementPathfinderTestsScript.new()
+	var movement_summary: Dictionary = movement_tests.run()
+	_checks += int(movement_summary["checks"])
+	_failures.append_array(movement_summary["failures"])
 	await _test_camera_controller()
 	await _test_scene_interactions()
 	if _failures.is_empty():
-		print("R2-B2-B CameraController/GridView: %d checks passed" % _checks)
+		print("R2-05A movement + R2-B2-B regression: %d checks passed" % _checks)
 		quit(0)
 		return
 	for failure in _failures:
