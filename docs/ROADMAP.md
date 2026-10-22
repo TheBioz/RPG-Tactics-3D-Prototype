@@ -1,6 +1,6 @@
 # Roadmap — RPG-Tactics-3D-Prototype
 
-**Versión:** 0.1 · **Fecha:** 2026-10-18 · **Estado:** BORRADOR OPERATIVO / PRIORIZACIÓN PROPUESTA (pendiente de aprobación del autor).  
+**Versión:** 0.2 (propuesta documental) · **Original:** 2026-10-18 · **Actualización:** 2026-10-22 · **Estado:** BORRADOR OPERATIVO. Decisión ISO/TOPDOWN manual acordada; el resto de prioridades y parámetros abiertos no pasan a aprobado automáticamente.  
 **Documento de diseño:** [GDD v0.1](GDD.md). **Visión original:** [pre-GDD](pre_gdd/README.md).  
 **Propósito:** convertir una visión amplia en entregables verificables de desarrollo **solo-dev**, priorizando un **Proof of Concept jugable**, sin confundir aspiraciones futuras con compromisos de V1 o fechas de lanzamiento.
 
@@ -48,7 +48,7 @@
 | --- | --- | --- | --- | --- |
 | **R0 — Baseline y alcance** | P0 | GDD/roadmap versionados, stack y pruebas mínimas definidos | **Documentación inicial creada; revisión pendiente** | Decisiones bloqueantes anotadas, repositorio reproducible |
 | **R1 — Art Tech PC-001** | P0 | Un personaje 2D reconocible, perfil, piezas/poses, prueba Godot; mapa mini-anime | **Investigación y rig proxy no validado; C3 falla** | C0/C3/C4/C5 de prueba superados, coste registrado |
-| **R2 — Mapa 3D táctico XYZ** | P0 | Cuadrícula/cámara/altura, selección, trayectoria y billboard | **No probado como juego integrado** | Escena Godot con elevación y cámara rotatoria utilizable |
+| **R2 — Mapa 3D táctico XYZ** | P0 | Cuadrícula/cámara ISO↔TOPDOWN manual/altura, selección, trayectoria y billboard | **GridModel, GridView y CameraController integrados (PR #3–#5); 916 tests, no juego táctico completo** | Ruta de movimiento legal y vistas coherentes con la cuadrícula |
 | **R3 — Reglas y scheduler** | P0 | Estado de ronda, activaciones proporcionales y tests | **Definición de visión, sin algoritmo validado** | Tests automatizados 1:1, 12:4, 7:4, bajas y excepciones |
 | **R4 — Combate táctico + IA** | P0 | Movimiento, daño, ataque/defensa, victoria, IA básica | **Sin implementación integrada verificada** | Batalla completa, estados deterministas reproducibles |
 | **R5 — PoC jugable integrado** | P0 | Una escaramuza funcional con UI, mapa/actores 2D, feedback y audio básico | **Pendiente** | Checklist de PoC cumplida, errores reproducibles |
@@ -110,21 +110,35 @@
 
 **Salida alternativa si falla arte:** continuar temporalmente con PoC **mecánico** usando placeholder claramente etiquetado, pero **no** afirmar PoC artístico y **no** encargar docenas de animaciones. Registrar decisión go/no-go explícita.
 
-## 5. R2 — Mundo táctico XYZ, selección, altura y cámara libre
+## 5. R2 — Mundo táctico XYZ, selección, altura y cámara ISO/TOPDOWN
 
-- [ ] **R2-01** Definir `GridCoordinate`, casilla lógica y altura; validar correspondencia entre world space, celda seleccionada y trayectoria.
-- [ ] **R2-02** Renderizar escenario **pequeño de prueba** con 2–3 niveles de elevación y obstáculo, texturas ilustradas simples, sin priorizar modelo 3D detallado.
-- [ ] **R2-03** Implementar cámara rotatoria alrededor del mapa, zoom, enfoque/centrado, ayuda de altura y lectura de objetivo.
-- [ ] **R2-04** Implementar picking casilla/unidad con ratón y una ruta de control compatible con mando, resaltados en mundo no incrustados en el sprite.
-- [ ] **R2-05** Movimiento con vecinos válidos, costes provisionales por terreno/altura y casillas ocupadas; pathfinding de prueba desacoplado de render.
-- [ ] **R2-06** Billboard corregido con pivote de pies, contacto, sombra y oclusiones frente a rocas/muros/escaleras; test 360° de yaw según límites que se aprueben.
-- [ ] **R2-07** HUD de selección, alcance/altura y minimapa básico si aporta legibilidad.
-- [ ] **R2-08** Prueba de rendimiento para escenario pequeño y carga de unidades, registrando hardware, versión y frame time. No optimizar prematuramente una batalla «masiva» teórica.
-- [ ] **R2-09** Importar y versionar el PoC isométrico que antes vivía solo en ZIP; refactorizar responsabilidades; ensayar **ISO_FULL / ISO_HYBRID / TOPDOWN** a distintos pitch con histéresis y fallbacks, preservando selección y estado de la cuadrícula. Umbrales y dirección artística en prueba, no aprobados. Véanse [ADR-0001](engineering/adr/ADR-0001-pitch-presentation.md), [diagnóstico previo de OpenCode R2 (archivado)](prompts/opencode/R2_CAMERA_PRESENTATION.md) y [prompt separado para PR A (baseline)](prompts/opencode/R2_BASELINE_PR_A.md). **Completar y revisar PR A antes de autorizar la conmutación en PR B.**
+**Actualización de decisión (2026-10-22):** el autor acordó **dos modos explícitos ISO y TOPDOWN con conmutación manual**, en lugar de ISO_FULL / ISO_HYBRID / TOPDOWN por pitch con histéresis. Véase [ADR-0001 actualizado](engineering/adr/ADR-0001-pitch-presentation.md). **Es una decisión de producto, no un reporte de funcionalidades implementadas**. Pendientes límite ISO definitivo, UX de controles, tokens/props cenitales y autorización separada para programarlo.
+
+**Baseline real integrado:** `GridModel` (PR #3), `GridView` (PR #4) y `CameraController` (PR #5), con Godot 4.7.2 y **916 comprobaciones** en la CI de PR #5. La cámara actual sigue con yaw 45°/pitch 50°/zoom 17, Q/E, R/F y rueda, pitch 25–78°; **todavía no implementa** arrastre MMB, conmutación de modos, TOPDOWN ni cámara desplazable. Las casillas, resaltados, movimiento provisional del proxy y pruebas de raycast no constituyen pathfinding táctico jugable.
+
+### Backlog R2
+
+- [ ] **R2-01** Definir `GridCoordinate`, casilla lógica y altura; validar correspondencia entre world space, celda seleccionada y trayectoria. *Parcial:* GridModel y conversiones de GridView; trayectoria real pendiente.
+- [ ] **R2-02** Renderizar escenario pequeño con 2–3 niveles de elevación y obstáculos, ilustraciones provisionales. *Baseline visual implementado y probado; gate integrado de R2 pendiente.*
+- [ ] **R2-03** Cámara ortográfica ISO rotatoria, zoom, enfoque/centrado y ayuda de altura; extender con TOPDOWN manual en trabajo separado. *Parcial:* CameraController extraído; foco fijo y sin conmutación de modo.
+- [ ] **R2-04** Picking casilla/unidad con ratón y control compatible con mando, resaltados en el mundo. *Parcial:* picking de collider real y selección de celda probados; unidad/mando pendientes.
+- [ ] **R2-05** Movimiento táctico con vecinos válidos, costes provisionales por terreno/altura y ocupación; cálculo de rutas **en dominio/aplicación**, desacoplado del render. *No confundir con TAB que teletransporta el proxy para probar anclaje.*
+- [ ] **R2-06** Pivote de pies, sombra y oclusiones frente a muros/rocas/escaleras; probar yaw completo y **rango ISO aprobado**. *Contactos pies/sombra con proxy cubiertos; QA avanzado pendiente.*
+- [ ] **R2-07** HUD de selección, altura, rangos y minimapa si aporta legibilidad. *HUD básico de selección ya existe; rango/minimapa pendientes.*
+- [ ] **R2-08** Medir rendimiento en escenario pequeño y carga de unidades, registrando hardware, versión y frame time.
+- [ ] **R2-09** **Presentación manual ISO ↔ TOPDOWN:** mantener ilustración vertical legible en ISO y una presentación cenital independiente del actor/props en TOPDOWN, con fallback temporal. **No implementar** ISO_HYBRID, umbrales automáticos ni histéresis. Compartir mismo estado lógico y picking, medir QA visual antes de aprobar assets. Ver [ADR-0001](engineering/adr/ADR-0001-pitch-presentation.md).
+- [ ] **R2-10 (controles; propuesto para PR propio)** Conservar Q/E (yaw) y rueda (zoom); añadir soporte de botón central pulsado y arrastre de cámara. Probar horizontal→yaw y vertical→pitch ISO. Conmutación manual por botón visible y tecla candidata T. WASD/pan, sensibilidad y mando por confirmar, no aprobados como valores finales.
+
+### Próximos checkpoints propuestos — orden aún por aprobar
+
+1. Formalizar ADR-0001 y este roadmap (solo documentación).
+2. Separar cambios de controles MMB y conmutación de modo de la extracción B2-B ya fusionada; decidir alcance mínimo y pruebas antes de programar.
+3. Priorizar **R2-05, movimiento táctico real con rutas y costes**, frente a pulido gráfico completo de TOPDOWN, sujeto a aprobación del autor; el modo TOPDOWN podrá empezar con proxies.
+4. Probar y fijar el máximo ISO a partir de muestras 50°/55°/60°; diseñar presentación cenital de actor y objetos altos sin falsear el gate artístico.
 
 ### Gate R2
 
-Una unidad visible se selecciona, mueve y mantiene pies y silueta creíbles mientras cambia elevación y rota/zoomea la cámara; la lógica de casillas coincide con geometría visual. Documentar ángulos problemáticos y soluciones, no ocultarlos con capturas elegidas.
+Una unidad visible se selecciona y mueve mediante ruta legal con coste, restricciones de terreno/altura y estado determinista; conserva pies y sombra al cambiar altura. La cámara permite girar/zoomear **dentro del rango ISO finalmente aprobado** y alternar **ISO ↔ TOPDOWN** con representación legible y selección coherente, sin cambios del estado lógico. Documentar los ángulos problemáticos (78° en billboards verticales), no ocultarlos con capturas elegidas. El PoC técnico puede usar tokens/proxies etiquetados; no declararlo artístico por ello.
 
 ## 6. R3 — Scheduler híbrido y reglas de ronda
 
@@ -158,7 +172,7 @@ Un enfrentamiento termina con un resultado reproducible sin intervención manual
 
 ### Entregable
 
-**Una build PC local**, iniciable por desarrollador, que permita jugar al menos una escaramuza completa contra IA: mapa táctico 3D con alturas, cámara libre, actor(es) 2D, movimiento/ataque, scheduler proporcional, resultado de combate, UI legible y victoria/derrota.
+**Una build PC local**, iniciable por desarrollador, que permita jugar al menos una escaramuza completa contra IA: mapa táctico 3D con alturas, cámara ISO rotatoria y TOPDOWN seleccionable, actor(es) 2D, movimiento/ataque, scheduler proporcional, resultado de combate, UI legible y victoria/derrota.
 
 ### Tareas de integración
 
@@ -267,7 +281,7 @@ Persona ajena al desarrollo puede completar una misión breve, comprender contro
 ### Arte y presentación
 
 - Personaje reconocido entre portrait, mapa, duelo; asimetrías coherentes y **calzado plano funcional**.
-- Cámara libre: contacto de pies, sombra y oclusión; vista de perfil lateral correcta sin «mirar a cámara».
+- Cámara ISO de inclinación limitada: contacto de pies, sombra, oclusión y yaw de prueba; TOPDOWN con presentación cenital específica y picking del mismo modelo, sin sustituirlo por billboards verticales aplastados.
 - Animación: carga/ataque/contacto/reacción, **no** slideshow de un cuerpo rígido vendido como rig funcional.
 - PNG: transparencia real, márgenes y pivotes, formato correcto, visual inspection; hash y costo/licencia.
 
@@ -282,7 +296,7 @@ Persona ajena al desarrollo puede completar una misión breve, comprender contro
 | Riesgo prioritario | Impacto | Medida y criterio de parada |
 | --- | --- | --- |
 | **R-ART-01: personaje 2D no animable** | Muy alto; la promesa visual depende de ello. | Pasar por C0–C5. Si falla método guiado tras iteraciones acotadas, cambiar técnica o hacer draw-over/rig manual; no lote de assets. |
-| **R-ART-02: billboards con cámara libre** | Alto; arma y pies pueden romper lectura y realismo. | Pruebas 360°, alturas y oclusiones; no introducir más clases hasta resolver. |
+| **R-ART-02: billboards ISO y vista TOPDOWN** | Alto; arma/pies pierden lectura si el ISO se inclina demasiado (observado a 78°). | Probar límite ISO legible y representación cenital independiente; yaw, alturas y oclusiones antes de escalar clases. |
 | **R-GAME-01: scheduler desigual** | Muy alto; núcleo original del juego. | Tests de equidad y no duplicación antes de IA avanzada o red. |
 | **R-TECH-01: 3D/2D + input Godot** | Alto; prototipo puede lucir bien en foto y fallar jugando. | Escena controlada real en Godot, vídeo y QA rotatorio. |
 | **R-SCOPE-01: un solo desarrollador** | Crítico para plazo/calidad. | Congelar PoC y diferir Maker, online, survival y economía profunda. |
@@ -322,6 +336,7 @@ Antes de iniciar cualquier ticket responder:
 ## 17. Registro de estados y cambios
 
 - **2026-10-18:** **ROADMAP v0.1 creado por solicitud del autor**. No se declaran cerradas las decisiones futuras ni realizados los hitos. Las pruebas artísticas previas PC-001 se arrastran como evidencia experimental y riesgos, no como gates aprobados.
+- **2026-10-22:** **Propuesta v0.2:** actualizar el estado de R2 tras PR #3–#5 y documentar la decisión del autor de **dos modos ISO/TOPDOWN manuales**, sin modo híbrido ni conmutación automática. Se propone adelantar movimiento táctico R2-05 frente a pulido cenital avanzado, pendiente de aprobación de la prioridad. La implementación de modos/controles sigue pendiente y no está incluida en esta propuesta.
 - Toda modificación de requisitos después de esta versión debe indicar fecha, motivo, impacto de alcance y relación con el GDD.
 - **Fuente central de la visión:** [pre-GDD](pre_gdd/README.md). **Especificación de diseño actual:** [GDD](GDD.md).
 
