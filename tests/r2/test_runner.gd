@@ -855,6 +855,11 @@ func _test_movement_resource_lifecycle() -> void:
 	_expect(_vector3_is_equal(invalid_texture_shadow.position,
 		invalid_texture_grid.world_position_for_cell(target) + Vector3(0.0, 0.048, 0.0)),
 		"valid surviving shadow must remain grounded after invalid texture scale")
+	invalid_texture_scene.call("select_cell", Vector2i(6, 6))
+	_expect(not invalid_texture_scene.call("_confirm_move_order"),
+		"new movement must be blocked while actor texture scale is invalid")
+	_expect_equal(invalid_texture_scene.get("actor_coordinate"), target,
+		"invalid-texture retry must not alter the committed destination")
 	invalid_texture_scene.queue_free()
 	await process_frame
 
