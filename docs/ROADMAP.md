@@ -142,12 +142,13 @@ Una unidad visible se selecciona y mueve mediante ruta legal con coste, restricc
 
 ## 6. R3 — Scheduler híbrido y reglas de ronda
 
-- [ ] **R3-01** Formalizar invariantes y reglas abiertas: elegibilidad, inicio de ronda, ventanas, bando inicial, desempates, tratamiento de Velocidad, bajas/refuerzos.
-- [ ] **R3-02** Implementar `BattleState` y registro de unidades/acciones ordinarias consumidas, separados de cámara y UI.
-- [ ] **R3-03** Prototipar y comparar al menos **dos políticas** para proporciones no enteras (p. ej., turnos ponderados / déficit acumulado), documentando injusticias y facilidad de uso. **No aceptar un algoritmo solo por el caso 12:4.**
-- [ ] **R3-04** Acordar con el autor la política elegida, incluyendo casos límite; plasmar fórmula exacta y ejemplos trazables en una especificación posterior.
-- [ ] **R3-05** Crear suite automática para 1:1, 4:4, 12:4, 7:4, 5:3 y variaciones de unidades elegibles; verificar que cada una actúa ordinariamente una vez.
-- [ ] **R3-06** Añadir eventos de baja, unidades adicionales, bloqueo/desbloqueo de estado y excepción danza/acción extra sin loops.
+- **Estado R3-C:** implementación en curso en `feat/r3-c-activation-scheduler`, checkpoint C1. El autor aprobó SWRR y reglas iniciales; la especificación está en `docs/engineering/specs/R3-C_ACTIVATION_SCHEDULER.md`. No marcar R3 ni esta implementación como completados antes de C2, revisión, regresión y aprobación/merge.
+- [ ] **R3-01** Formalizar reglas del PoC: política y elegibilidad aprobadas; incapacitación y ampliaciones siguen pendientes.
+- [ ] **R3-02** Implementar `BattleState` y registro de activaciones ordinarias consumidas, separados de cámara/UI. **C1 en curso; transición autoritativa pendiente de C2.**
+- [ ] **R3-03** Comparar dos políticas para proporciones no enteras y registrar diferencias. **Diseño R3-A/R3-B realizado; erratas corregidas antes de elegir SWRR.**
+- [ ] **R3-04** Especificar la política aprobada y casos iniciales. **Especificación versionada; integración aún pendiente.**
+- [ ] **R3-05** Suite automática para calendarios, proporciones y estados límite; una activación ordinaria por unidad. **C1 cubre secuencias; validación autoritativa y regresión pendientes.**
+- [ ] **R3-06** Bajas, unidades adicionales, bloqueo/desbloqueo y acciones extraordinarias. **C2 cubre bajas lógicas; refuerzos/incapacitación/acciones extra permanecen fuera hasta decisión/alcance posterior.**
 - [ ] **R3-07** Visualizar ventana/bando/unidades pendientes con UI legible; sin inventar todavía online/código de red.
 
 ### Gate R3
