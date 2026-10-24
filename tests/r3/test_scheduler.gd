@@ -10,9 +10,11 @@ var _failures: PackedStringArray = []
 
 func run() -> Dictionary:
 	_test_reference_sequences()
+	_test_exact_reference_metrics()
 	_test_query_is_repeatable_and_non_mutating()
 	_test_snapshot_is_detached()
 	_test_roster_validation()
+	_test_roster_reconfiguration_is_rejected()
 	_test_empty_round_and_invalid_snapshot()
 	return {"checks": _checks, "failures": _failures}
 
@@ -66,6 +68,27 @@ func _test_query_is_repeatable_and_non_mutating() -> void:
 	_expect_equal(state.scheduler_snapshot(), before, "peek must not mutate battle state")
 	_expect(first.permission_id.begins_with("1:0:"), "first permission must identify round and revision")
 
+func _test_exact_reference_metrics() -> void:
+	var cases: Array[Dictionary] = [
+		{"a": 7, "b": 4, "sequence": "ABAABABAABA", "block": 2, "dmax": 5.0 / 11.0,
+			"initial_a": 0, "initial_b": 1, "between_a": 1, "between_b": 2},
+		{"a": 12, "b": 4, "sequence": "AABAAABAAABAAABA", "block": 3, "dmax": 0.5,
+			"initial_a": 0, "initial_b": 2, "between_a": 1, "between_b": 3},
+		{"a": 1, "b": 8, "sequence": "BBBBABBBB", "block": 4, "dmax": 4.0 / 9.0,
+			"initial_a": 4, "initial_b": 0, "between_a": 0, "between_b": 1},
+	]
+	for test_case in cases:
+		var outcome: Dictionary = _simulate(int(test_case["a"]), int(test_case["b"]), &"A")
+		var metrics: Dictionary = outcome["metrics"]
+		_expect_equal(outcome["sequence"], test_case["sequence"], "metric fixture calendar must match SWRR")
+		_expect_equal(metrics["max_block"], test_case["block"], "derived max block must match exact reference")
+		_expect(absf(float(metrics["max_deviation"]) - float(test_case["dmax"])) < 0.000001,
+			"derived Dmax must match exact reference within 1e-6")
+		_expect_equal(metrics["wait_initial_a"], test_case["initial_a"], "derived A initial wait must match")
+		_expect_equal(metrics["wait_initial_b"], test_case["initial_b"], "derived B initial wait must match")
+		_expect_equal(metrics["wait_between_a"], test_case["between_a"], "derived A inter-permission wait must match")
+		_expect_equal(metrics["wait_between_b"], test_case["between_b"], "derived B inter-permission wait must match")
+
 func _test_snapshot_is_detached() -> void:
 	var state := _make_state(2, 1, &"A")
 	var original: Dictionary = state.scheduler_snapshot()
@@ -95,6 +118,16 @@ func _test_empty_round_and_invalid_snapshot() -> void:
 	extreme["credits"][&"A"] = 9223372036854775807
 	_expect_equal(scheduler.peek(extreme).status, ResultScript.Status.INVALID_STATE,
 		"extreme credit must fail validation before arithmetic")
+	var invalid_postcondition: Dictionary = _make_state(1, 1, &"A").scheduler_snapshot()
+	invalid_postcondition["credits"][&"A"] = -200000
+	invalid_postcondition["credits"][&"B"] = -200000
+	var postcondition_result: ActivationSchedulerResult = scheduler.peek(invalid_postcondition)
+	_expect_equal(postcondition_result.status, ResultScript.Status.INVALID_STATE,
+		"SWRR must reject a permission whose proposed credits fail next-snapshot validation")
+	_expect_equal(postcondition_result.error_code, &"invalid_resulting_credits",
+		"out-of-range proposed credits must return an explicit typed error")
+	_expect_equal(invalid_postcondition["credits"][&"A"], -200000,
+		"rejected permission calculation must leave caller snapshot credits unchanged")
 
 func _test_roster_validation() -> void:
 	var state := BattleStateScript.new()
@@ -114,6 +147,36 @@ func _test_roster_validation() -> void:
 	var valid_empty_sides: Array[StringName] = []
 	_expect(state.configure_round(valid_empty_ids, valid_empty_sides, &"A", &"B", &"A", 1),
 		"zero-versus-zero roster is valid and immediately complete")
+
+func _test_roster_reconfiguration_is_rejected() -> void:
+	var state := _make_state(2, 1, &"A")
+	var before_snapshot: Dictionary = state.scheduler_snapshot()
+	var before_revision: int = state.revision()
+	var before_permission: ActivationSchedulerResult = SchedulerScript.new().peek(before_snapshot)
+	var invalid_ids: Array[String] = ["duplicate", "duplicate"]
+	var invalid_sides: Array[StringName] = [&"A", &"B"]
+	_expect(not state.configure_round(invalid_ids, invalid_sides, &"A", &"B", &"A", 2),
+		"valid state must reject an invalid reconfiguration")
+	_assert_state_unchanged(state, before_snapshot, before_revision, before_permission.permission_id,
+		"invalid reconfiguration")
+	var replacement_ids: Array[String] = ["replacement"]
+	var replacement_sides: Array[StringName] = [&"B"]
+	_expect(not state.configure_round(replacement_ids, replacement_sides, &"A", &"B", &"A", 1),
+		"valid state must reject a second valid configuration with the same round ID")
+	_assert_state_unchanged(state, before_snapshot, before_revision, before_permission.permission_id,
+		"same-round reconfiguration")
+	var fresh_state := BattleStateScript.new()
+	_expect(fresh_state.configure_round(replacement_ids, replacement_sides, &"A", &"B", &"A", 1),
+		"a fresh BattleState instance must accept a valid initial configuration")
+
+func _assert_state_unchanged(state: BattleState, expected_snapshot: Dictionary,
+		expected_revision: int, expected_permission_id: String, label: String) -> void:
+	var actual_snapshot: Dictionary = state.scheduler_snapshot()
+	_expect_equal(actual_snapshot, expected_snapshot, "%s must preserve snapshot and credits" % label)
+	_expect_equal(state.revision(), expected_revision, "%s must preserve revision" % label)
+	var permission: ActivationSchedulerResult = SchedulerScript.new().peek(actual_snapshot)
+	_expect_equal(permission.permission_id, expected_permission_id,
+		"%s must preserve the logical permission" % label)
 
 func _simulate(count_a: int, count_b: int, priority: StringName) -> Dictionary:
 	var ids: Array[String] = []

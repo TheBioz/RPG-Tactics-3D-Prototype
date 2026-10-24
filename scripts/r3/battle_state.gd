@@ -26,6 +26,8 @@ func configure_round(
 		side_b: StringName,
 		priority_side: StringName,
 		round_id: int) -> bool:
+	if _is_valid:
+		return false
 	_reset()
 	if round_id <= 0 or side_a.is_empty() or side_b.is_empty() or side_a == side_b:
 		_error_code = &"invalid_round_or_sides"

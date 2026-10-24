@@ -54,6 +54,9 @@ func peek(snapshot: Dictionary) -> ActivationSchedulerResult:
 		accumulated_a -= active_weight_sum
 	else:
 		accumulated_b -= active_weight_sum
+	if not _credit_within_snapshot_range(accumulated_a) \
+		or not _credit_within_snapshot_range(accumulated_b):
+		return _invalid_result(&"invalid_resulting_credits")
 	var round_number: int = int(snapshot["round_id"])
 	var state_revision: int = int(snapshot["revision"])
 	var permission_id: String = "%d:%d:%s" % [round_number, state_revision, String(winner)]
@@ -113,6 +116,9 @@ func _has_valid_snapshot_shape(snapshot: Dictionary) -> bool:
 
 func _valid_nonnegative(value: Variant, maximum: int) -> bool:
 	return typeof(value) == TYPE_INT and int(value) >= 0 and int(value) <= maximum
+
+func _credit_within_snapshot_range(value: int) -> bool:
+	return value >= -MAX_UNITS_PER_SIDE * 2 and value <= MAX_UNITS_PER_SIDE * 2
 
 func _invalid_result(code: StringName) -> ActivationSchedulerResult:
 	return ResultScript.new(ActivationSchedulerResult.Status.INVALID_STATE, &"", "", -1, -1, 0, 0, code)
