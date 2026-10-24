@@ -114,7 +114,7 @@
 
 **Actualización de decisión (2026-10-22):** el autor acordó **dos modos explícitos ISO y TOPDOWN con conmutación manual**, en lugar de ISO_FULL / ISO_HYBRID / TOPDOWN por pitch con histéresis. Véase [ADR-0001 actualizado](engineering/adr/ADR-0001-pitch-presentation.md). **Es una decisión de producto, no un reporte de funcionalidades implementadas**. Pendientes límite ISO definitivo, UX de controles, tokens/props cenitales y autorización separada para programarlo.
 
-**Baseline integrado en `main`:** `GridModel` (PR #3), `GridView` (PR #4) y `CameraController` (PR #5), Godot 4.7.2. **PR #8 Draft (no fusionada)** implementa R2-05 en su rama: pathfinding/costes, validación de órdenes, preview, confirmación TAB y movimiento visual por casillas; runner local/CI en ese HEAD: **1310 checks**. La cámara actual sigue con yaw 45°/pitch 50°/zoom 17, Q/E, R/F y rueda, pitch 25–78°; **todavía no implementa** arrastre MMB ni conmutación manual ISO/TOPDOWN. La limitación visual del billboard fixed-Y a pitch 78° sigue pendiente.
+**Baseline integrado en `main`:** PR #7 / R2-05A está fusionada mediante `5f7b9f39a7ac7d563e58d726cde0bec6252883a0` (incluye `GridModel`, `GridView` y `CameraController`). **PR #8 Draft, aún no fusionada**, implementa en su rama R2-05B: pathfinding/costes, validación de órdenes, preview, confirmación TAB y movimiento visual por casillas; runner local/CI en ese HEAD: **1310 checks**. Estas capacidades visuales/tácticas de PR #8 no se atribuyen al `main` integrado. La cámara actual sigue con yaw 45°/pitch 50°/zoom 17, Q/E, R/F y rueda, pitch 25–78°; **todavía no implementa** arrastre MMB ni conmutación manual ISO/TOPDOWN. La limitación visual del billboard fixed-Y a pitch 78° sigue pendiente.
 
 ### Backlog R2
 
