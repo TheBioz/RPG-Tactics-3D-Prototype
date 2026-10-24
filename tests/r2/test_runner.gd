@@ -37,6 +37,7 @@ func _run_tests() -> void:
 	await _test_movement_order_flow()
 	await _test_delta_partition_independence()
 	await _test_movement_resource_lifecycle()
+	await _test_scene_release_during_movement()
 	if _failures.is_empty():
 		print("R2-05A/B movement + R2-B2-B regression: %d checks passed" % _checks)
 		quit(0)
