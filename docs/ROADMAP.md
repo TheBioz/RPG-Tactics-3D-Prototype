@@ -118,7 +118,7 @@
 
 ### Backlog R2
 
-- [ ] **R2-01** Definir `GridCoordinate`, casilla lógica y altura; validar correspondencia entre world space, celda seleccionada y trayectoria. *Parcial:* GridModel y conversiones de GridView; trayectoria real pendiente.
+- [ ] **R2-01** Definir `GridCoordinate`, casilla lógica y altura; validar correspondencia entre world space, celda seleccionada y trayectoria. *Parcial:* GridModel/conversiones y trayectorias legales con coste ya implementados en la rama de PR #8 (no fusionada); otros contratos del hito siguen pendientes.
 - [ ] **R2-02** Renderizar escenario pequeño con 2–3 niveles de elevación y obstáculos, ilustraciones provisionales. *Baseline visual implementado y probado; gate integrado de R2 pendiente.*
 - [ ] **R2-03** Cámara ortográfica ISO rotatoria, zoom, enfoque/centrado y ayuda de altura; extender con TOPDOWN manual en trabajo separado. *Parcial:* CameraController extraído; foco fijo y sin conmutación de modo.
 - [ ] **R2-04** Picking casilla/unidad con ratón y control compatible con mando, resaltados en el mundo. *Parcial:* picking de collider real y selección de celda probados; unidad/mando pendientes.
@@ -133,7 +133,7 @@
 
 1. Formalizar ADR-0001 y este roadmap (solo documentación).
 2. Separar cambios de controles MMB y conmutación de modo de la extracción B2-B ya fusionada; decidir alcance mínimo y pruebas antes de programar.
-3. Priorizar **R2-05, movimiento táctico real con rutas y costes**, frente a pulido gráfico completo de TOPDOWN, sujeto a aprobación del autor; el modo TOPDOWN podrá empezar con proxies.
+3. **Histórico (2026-10-22):** la propuesta de priorizar R2-05 frente al pulido de TOPDOWN se ejecutó como PR #8 Draft; no constituye autorización automática de ningún hito posterior. Próximos checkpoints requieren decisión explícita del autor.
 4. Probar y fijar el máximo ISO a partir de muestras 50°/55°/60°; diseñar presentación cenital de actor y objetos altos sin falsear el gate artístico.
 
 ### Gate R2
@@ -336,7 +336,7 @@ Antes de iniciar cualquier ticket responder:
 ## 17. Registro de estados y cambios
 
 - **2026-10-18:** **ROADMAP v0.1 creado por solicitud del autor**. No se declaran cerradas las decisiones futuras ni realizados los hitos. Las pruebas artísticas previas PC-001 se arrastran como evidencia experimental y riesgos, no como gates aprobados.
-- **2026-10-22:** **Propuesta v0.2:** actualizar el estado de R2 tras PR #3–#5 y documentar la decisión del autor de **dos modos ISO/TOPDOWN manuales**, sin modo híbrido ni conmutación automática. Se propone adelantar movimiento táctico R2-05 frente a pulido cenital avanzado, pendiente de aprobación de la prioridad. La implementación de modos/controles sigue pendiente y no está incluida en esta propuesta.
+- **2026-10-22:** **Propuesta v0.2 (registro histórico):** actualizar el estado de R2 tras PR #3–#5 y documentar la decisión del autor de **dos modos ISO/TOPDOWN manuales**, sin modo híbrido ni conmutación automática. La prioridad de adelantar R2-05 se autorizó posteriormente y su implementación está en PR #8 Draft (aún no fusionada). Este registro histórico no autoriza R2-06, R2-09 ni R3. La implementación de modos/controles sigue pendiente de autorización propia.
 - Toda modificación de requisitos después de esta versión debe indicar fecha, motivo, impacto de alcance y relación con el GDD.
 - **Fuente central de la visión:** [pre-GDD](pre_gdd/README.md). **Especificación de diseño actual:** [GDD](GDD.md).
 
