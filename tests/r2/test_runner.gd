@@ -3,11 +3,14 @@ extends SceneTree
 
 const GridModelScript = preload("res://scripts/r2/grid_model.gd")
 const MovementPathfinderTestsScript = preload("res://tests/r2/test_movement_pathfinder.gd")
+const MovementCommandTestsScript = preload("res://tests/r2/test_movement_command.gd")
 const MAIN_SCENE: PackedScene = preload("res://scenes/IsometricArtTest.tscn")
 
 const CELL_SIZE: float = 1.0
 const STEP_Y: float = 0.58
 const BASE_Y: float = 0.42
+const MOVEMENT_STATE_IDLE: int = 0
+const MOVEMENT_STATE_MOVING: int = 1
 
 var _failures: PackedStringArray = []
 var _checks: int = 0
@@ -25,10 +28,18 @@ func _run_tests() -> void:
 	var movement_summary: Dictionary = movement_tests.run()
 	_checks += int(movement_summary["checks"])
 	_failures.append_array(movement_summary["failures"])
+	var command_tests = MovementCommandTestsScript.new()
+	var command_summary: Dictionary = command_tests.run()
+	_checks += int(command_summary["checks"])
+	_failures.append_array(command_summary["failures"])
 	await _test_camera_controller()
 	await _test_scene_interactions()
+	await _test_movement_order_flow()
+	await _test_delta_partition_independence()
+	await _test_movement_resource_lifecycle()
+	await _test_scene_release_during_movement()
 	if _failures.is_empty():
-		print("R2-05A movement + R2-B2-B regression: %d checks passed" % _checks)
+		print("R2-05A/B movement + R2-B2-B regression: %d checks passed" % _checks)
 		quit(0)
 		return
 	for failure in _failures:
@@ -494,6 +505,385 @@ func _test_scene_interactions() -> void:
 
 	scene.queue_free()
 	await process_frame
+
+func _test_movement_order_flow() -> void:
+	var scene := MAIN_SCENE.instantiate()
+	root.add_child(scene)
+	await process_frame
+	var grid_view: GridView = scene.get("grid_view")
+	var hero: Sprite3D = scene.get("hero")
+	var shadow: MeshInstance3D = scene.get("hero_shadow")
+	var start: Vector2i = scene.get("actor_coordinate")
+	var grid_model: GridModel = scene.get("grid_model")
+	var grid_snapshot: Dictionary = _grid_model_snapshot(grid_model)
+	var initial_hero_position: Vector3 = hero.position
+	var initial_shadow_position: Vector3 = shadow.position
+	var route_overlay: Node3D = grid_view.get_node("RoutePreview")
+	var collider_count_before_preview: int = scene.get_tree().get_nodes_in_group("grid_tile").size()
+	var target := Vector2i(7, 6)
+	var target_screen_position: Vector2 = scene.get_node("Camera3D").unproject_position(
+		grid_view.world_position_for_cell(target)
+	)
+	var target_click := InputEventMouseButton.new()
+	target_click.button_index = MOUSE_BUTTON_LEFT
+	target_click.pressed = true
+	target_click.position = target_screen_position
+	scene.call("_unhandled_input", target_click)
+	_expect_equal(scene.get("selected_coordinate"), target,
+		"clicking a real grid collider must update the selected destination")
+	_expect_equal(scene.get("actor_coordinate"), start,
+		"selection preview must not move the actor logically")
+	_expect(hero.position.distance_to(initial_hero_position) < 0.0001
+		and shadow.position.distance_to(initial_shadow_position) < 0.0001,
+		"selection preview must not move sprite or shadow")
+	var preview: MovementCommandResult = scene.get("movement_preview")
+	_expect_equal(preview.status, MovementCommandResult.Status.ACCEPTED,
+		"legal clicked destination must produce an accepted preview")
+	_expect_equal(preview.total_cost, 3, "preview must display the exact path cost")
+	_expect_equal(route_overlay.get_child_count(), preview.path.size() - 1,
+		"route preview must mark each traversed cell after the actor origin")
+	_expect_equal(scene.get_tree().get_nodes_in_group("grid_tile").size(), collider_count_before_preview,
+		"route preview must not add or alter picking colliders")
+
+	var preview_before_invalid: MovementCommandResult = scene.get("movement_preview")
+	_expect(not scene.call("select_cell", Vector2i(12, 12)),
+		"out-of-bounds selection must be rejected")
+	_expect_equal(scene.get("selected_coordinate"), target,
+		"invalid selection must preserve current destination")
+	_expect(scene.get("movement_preview") == preview_before_invalid,
+		"invalid selection must preserve preview for unchanged destination")
+
+	_expect(scene.call("select_cell", Vector2i(2, 2)), "water cell remains selectable for feedback")
+	_expect_equal(scene.get("movement_preview").status,
+		MovementCommandResult.Status.ILLEGAL_DESTINATION,
+		"water selection must produce an illegal-destination reason")
+	_expect_equal(route_overlay.get_child_count(), 0,
+		"illegal destination must clear the old legal route")
+	_expect_equal(scene.get("actor_coordinate"), start,
+		"illegal preview must not mutate actor coordinate")
+
+	var over_budget := Vector2i(9, 4)
+	_expect(scene.call("select_cell", over_budget), "far legal cell must be selectable")
+	_expect_equal(scene.get("movement_preview").status,
+		MovementCommandResult.Status.INSUFFICIENT_BUDGET,
+		"over-budget destination must be reported")
+	_expect_equal(route_overlay.get_child_count(), 0,
+		"diagnostic over-budget route must not be drawn as authorized")
+	_expect(not scene.call("_confirm_move_order"), "over-budget TAB confirmation must be rejected")
+	_expect_equal(scene.get("actor_coordinate"), start,
+		"over-budget confirmation must not move actor")
+
+	_expect(scene.call("select_cell", target), "legal destination can be reselected")
+	_expect(scene.call("move_actor_to", Vector2i(11, 11)),
+		"test setup helper can change origin between preview and confirmation")
+	_expect_equal(scene.get("movement_preview").status, MovementCommandResult.Status.ACCEPTED,
+		"previous preview remains only a preview after test state changes")
+	_expect(not scene.call("_confirm_move_order"),
+		"confirmation must re-evaluate from the current actor coordinate")
+	_expect(scene.get("movement_preview") == null,
+		"confirmation must clear the previous preview result even when rejected")
+	_expect(str(scene.get("movement_message")).contains("supera el presupuesto"),
+		"revalidation must report the updated route cost in the HUD message")
+	_expect_equal(scene.get("actor_coordinate"), Vector2i(11, 11),
+		"rejected stale preview must preserve the current actor origin")
+	_expect(scene.call("move_actor_to", start), "test setup helper restores original actor cell")
+	_expect(scene.call("select_cell", target), "reselecting target must calculate a fresh preview")
+
+	var available_shadow: MeshInstance3D = scene.get("hero_shadow")
+	scene.set("hero_shadow", null)
+	_expect(not scene.call("_confirm_move_order"),
+		"missing shadow must reject before committing a logical move")
+	_expect_equal(scene.get("actor_coordinate"), start,
+		"missing presentation resource must leave actor coordinate unchanged")
+	scene.set("hero_shadow", available_shadow)
+	_expect(scene.call("select_cell", target), "target preview must be refreshed after resource restoration")
+
+	var props: Node3D = scene.get("prop_root")
+	var hide_props := InputEventKey.new()
+	hide_props.keycode = KEY_B
+	hide_props.pressed = true
+	scene.call("_unhandled_input", hide_props)
+	_expect(not props.visible, "B must still hide props in C1")
+	_expect(not scene.call("_confirm_move_order"),
+		"movement must be rejected while actor presentation is hidden")
+	_expect_equal(scene.get("actor_coordinate"), start,
+		"hidden actor must not receive a logical movement update")
+	var show_props := InputEventKey.new()
+	show_props.keycode = KEY_B
+	show_props.pressed = true
+	scene.call("_unhandled_input", show_props)
+	_expect(props.visible, "B must restore actor presentation")
+
+	scene.set_process(false)
+	scene.get_node("Camera3D").apply_rotation_deltas(30.0, 5.0)
+	var tab := InputEventKey.new()
+	tab.keycode = KEY_TAB
+	tab.pressed = true
+	scene.call("_unhandled_input", tab)
+	_expect_equal(scene.get("actor_coordinate"), target,
+		"accepted TAB must commit the logical destination exactly once")
+	_expect_equal(int(scene.get("movement_state")), MOVEMENT_STATE_MOVING,
+		"accepted TAB must enter MOVING state")
+	var accepted_path: Array[Vector2i] = scene.get("accepted_path")
+	_expect_equal(accepted_path, [start, Vector2i(6, 6), target],
+		"execution must copy the newly validated complete route")
+	_expect(scene.get("movement_preview") == null,
+		"confirmation must clear the previsualization result")
+	_expect(hero.position.distance_to(initial_hero_position) < 0.0001,
+		"acceptance must not snap the sprite to destination before route progression")
+	_expect_equal(route_overlay.get_child_count(), accepted_path.size() - 1,
+		"accepted route markers must remain visible during MOVING")
+
+	var blocked_click := InputEventMouseButton.new()
+	blocked_click.button_index = MOUSE_BUTTON_LEFT
+	blocked_click.pressed = true
+	blocked_click.position = target_screen_position
+	scene.call("_unhandled_input", blocked_click)
+	_expect_equal(scene.get("selected_coordinate"), target,
+		"left click must not replace selection while MOVING")
+	var repeated_tab := InputEventKey.new()
+	repeated_tab.keycode = KEY_TAB
+	repeated_tab.pressed = true
+	scene.call("_unhandled_input", repeated_tab)
+	_expect_equal(scene.get("accepted_path"), accepted_path,
+		"repeated TAB must not replace or execute the accepted route")
+	var v_event := InputEventKey.new()
+	v_event.keycode = KEY_V
+	v_event.pressed = true
+	scene.set("reference_texture", load("res://art/pc001_map_proxy.svg"))
+	scene.call("_unhandled_input", v_event)
+	_expect(not scene.get("use_reference"), "V must not change texture during MOVING")
+	var b_event := InputEventKey.new()
+	b_event.keycode = KEY_B
+	b_event.pressed = true
+	scene.call("_unhandled_input", b_event)
+	_expect(props.visible, "B must not hide props during MOVING")
+	var grid_event := InputEventKey.new()
+	grid_event.keycode = KEY_G
+	grid_event.pressed = true
+	scene.call("_unhandled_input", grid_event)
+	_expect(not grid_view.get_node("GridOverlay").visible,
+		"G grid visibility control must remain available during MOVING")
+	scene.call("_unhandled_input", grid_event)
+	_expect(grid_view.get_node("GridOverlay").visible, "G must restore grid visibility during MOVING")
+	scene.get_node("Camera3D").reset_camera()
+	_expect_equal(scene.get("actor_coordinate"), target,
+		"camera controls must not change the confirmed logical destination")
+
+	var intermediate_surface: Vector3 = grid_view.world_position_for_cell(Vector2i(6, 6))
+	var half_height: float = float(hero.texture.get_height()) * hero.pixel_size * 0.5
+	scene.call("_advance_movement", 0.2)
+	_expect_equal(int(scene.get("movement_state")), MOVEMENT_STATE_MOVING,
+		"first cell step must leave the remaining route in progress")
+	_expect(_vector3_is_equal(hero.position,
+		intermediate_surface + Vector3(0.0, half_height, 0.0)),
+		"movement must visibly visit the intermediate cell")
+	_expect_equal(scene.get("actor_coordinate"), target,
+		"route presentation must not alter the already committed logical destination")
+
+	var lower_surface_y: float = intermediate_surface.y
+	var upper_surface_y: float = grid_view.world_position_for_cell(target).y
+	scene.call("_advance_movement", 0.1)
+	var transition_surface_y := lerpf(lower_surface_y, upper_surface_y, 0.5)
+	_expect(_vector3_is_equal(hero.position, Vector3(7.0, transition_surface_y + half_height, 6.5)),
+		"height change must use the boundary transition phase")
+	_expect(absf(shadow.position.y - (lower_surface_y + 0.048)) < 0.0001,
+		"shadow must stay on the lower support surface during ascent")
+	scene.call("_advance_movement", 0.1)
+	_expect_equal(int(scene.get("movement_state")), MOVEMENT_STATE_IDLE,
+		"finishing the route must return to IDLE")
+	var destination_surface: Vector3 = grid_view.world_position_for_cell(target)
+	_expect(absf(hero.position.y - half_height - destination_surface.y) < 0.0001,
+		"completed route must place actor feet exactly at the destination")
+	_expect(absf(shadow.position.y - (destination_surface.y + 0.048)) < 0.0001,
+		"completed route must anchor shadow at the destination surface")
+	_expect_equal(route_overlay.get_child_count(), 0, "completed route must clear its visual markers")
+	_expect((scene.get("accepted_path") as Array[Vector2i]).is_empty(),
+		"completion must clear the accepted route")
+	_expect(scene.get("movement_preview") == null,
+		"completion must keep the preview result cleared")
+
+	var actor_before_camera: Vector2i = scene.get("actor_coordinate")
+	var selection_before_camera: Vector2i = scene.get("selected_coordinate")
+	_expect_equal(grid_model.height_level_at(target), 1,
+		"movement presentation must not modify the GridModel")
+	_expect_equal(_grid_model_snapshot(grid_model), grid_snapshot,
+		"animation must not mutate any GridModel cell")
+	_expect_equal(scene.get("actor_coordinate"), actor_before_camera,
+		"logical actor coordinate must remain at its committed endpoint")
+	_expect_equal(scene.get("selected_coordinate"), selection_before_camera,
+		"logical selection must remain unchanged through route presentation")
+	scene.queue_free()
+	await process_frame
+
+func _test_delta_partition_independence() -> void:
+	var single_advance: Array[float] = [0.4]
+	var regular_advances: Array[float] = [0.1, 0.1, 0.1, 0.1]
+	var irregular_advances: Array[float] = [0.07, 0.13, 0.09, 0.11]
+	var one_step_result := await _run_route_with_deltas(single_advance, true)
+	var regular_result := await _run_route_with_deltas(regular_advances, false)
+	var irregular_result := await _run_route_with_deltas(irregular_advances, false)
+	for result in [one_step_result, regular_result, irregular_result]:
+		_expect_equal(result["actor"], Vector2i(7, 6),
+			"all delta partitions must commit the same logical destination")
+		_expect_equal(result["state"], MOVEMENT_STATE_IDLE,
+			"equal total time must finish movement in IDLE")
+		_expect_equal(result["accepted_path_empty"], true,
+			"all delta partitions must clear the accepted route")
+		_expect_equal(result["preview_cleared"], true,
+			"all delta partitions must clear preview state")
+		_expect_equal(result["route_marker_count"], 0,
+			"all delta partitions must clear route markers")
+	_expect(_vector3_is_equal(one_step_result["hero"], regular_result["hero"])
+		and _vector3_is_equal(one_step_result["hero"], irregular_result["hero"]),
+		"different delta partitions must produce the exact same final sprite position")
+	_expect(_vector3_is_equal(one_step_result["shadow"], regular_result["shadow"])
+		and _vector3_is_equal(one_step_result["shadow"], irregular_result["shadow"]),
+		"different delta partitions must produce the exact same final shadow position")
+
+func _run_route_with_deltas(deltas: Array[float], check_invalid_deltas: bool) -> Dictionary:
+	var scene := MAIN_SCENE.instantiate()
+	root.add_child(scene)
+	await process_frame
+	scene.set_process(false)
+	var grid_view: GridView = scene.get("grid_view")
+	var hero: Sprite3D = scene.get("hero")
+	var shadow: MeshInstance3D = scene.get("hero_shadow")
+	var destination := Vector2i(7, 6)
+	_expect(scene.call("select_cell", destination), "delta test destination must be selectable")
+	_expect(scene.call("_confirm_move_order"), "delta test route must be accepted")
+	var source_hero_position: Vector3 = hero.position
+	if check_invalid_deltas:
+		var invalid_deltas: Array[float] = [0.0, -0.1, NAN, INF]
+		for invalid_delta in invalid_deltas:
+			scene.call("_advance_movement", invalid_delta)
+			_expect_equal(int(scene.get("movement_state")), MOVEMENT_STATE_MOVING,
+				"zero, negative and non-finite delta must leave movement pending")
+			_expect(_vector3_is_equal(hero.position, source_hero_position),
+				"invalid delta must not mutate visual position")
+	for delta in deltas:
+		scene.call("_advance_movement", delta)
+		_expect_equal(scene.get("actor_coordinate"), destination,
+			"delta advancement must not change the already committed logical endpoint")
+	var result := {
+		"actor": scene.get("actor_coordinate"),
+		"state": int(scene.get("movement_state")),
+		"hero": hero.position,
+		"shadow": shadow.position,
+		"accepted_path_empty": (scene.get("accepted_path") as Array[Vector2i]).is_empty(),
+		"preview_cleared": scene.get("movement_preview") == null,
+		"route_marker_count": grid_view.get_node("RoutePreview").get_child_count(),
+	}
+	scene.queue_free()
+	await process_frame
+	return result
+
+func _test_movement_resource_lifecycle() -> void:
+	var shadow_scene := MAIN_SCENE.instantiate()
+	root.add_child(shadow_scene)
+	await process_frame
+	shadow_scene.set_process(false)
+	var shadow_grid: GridView = shadow_scene.get("grid_view")
+	var shadow_hero: Sprite3D = shadow_scene.get("hero")
+	var disposable_shadow: MeshInstance3D = shadow_scene.get("hero_shadow")
+	var target := Vector2i(7, 6)
+	shadow_scene.call("select_cell", target)
+	shadow_scene.call("_confirm_move_order")
+	disposable_shadow.queue_free()
+	await process_frame
+	shadow_scene.call("_advance_movement", 0.05)
+	_expect_equal(shadow_scene.get("actor_coordinate"), target,
+		"shadow loss must not roll back accepted logical destination")
+	_expect_equal(int(shadow_scene.get("movement_state")), MOVEMENT_STATE_IDLE,
+		"shadow loss must stop animation and return to IDLE")
+	_expect(_vector3_is_equal(shadow_hero.position,
+		shadow_grid.world_position_for_cell(target) + Vector3(0.0,
+			float(shadow_hero.texture.get_height()) * shadow_hero.pixel_size * 0.5, 0.0)),
+		"surviving hero must synchronize to the accepted destination")
+	_expect_equal(shadow_grid.get_node("RoutePreview").get_child_count(), 0,
+		"shadow loss must clear route markers")
+	shadow_scene.call("select_cell", Vector2i(6, 6))
+	_expect(not shadow_scene.call("_confirm_move_order"),
+		"new movement must remain blocked while shadow resource is missing")
+	_expect_equal(shadow_scene.get("actor_coordinate"), target,
+		"missing-shadow retry must not change logical destination")
+	shadow_scene.queue_free()
+	await process_frame
+
+	var hero_scene := MAIN_SCENE.instantiate()
+	root.add_child(hero_scene)
+	await process_frame
+	hero_scene.set_process(false)
+	var hero_grid: GridView = hero_scene.get("grid_view")
+	var surviving_shadow: MeshInstance3D = hero_scene.get("hero_shadow")
+	hero_scene.call("select_cell", target)
+	hero_scene.call("_confirm_move_order")
+	var weak_hero: WeakRef = weakref(hero_scene.get("hero"))
+	hero_scene.get("hero").queue_free()
+	await process_frame
+	hero_scene.call("_advance_movement", 0.05)
+	_expect(weak_hero.get_ref() == null, "freed hero fixture must actually release")
+	_expect_equal(hero_scene.get("actor_coordinate"), target,
+		"hero loss must preserve accepted logical destination")
+	_expect_equal(int(hero_scene.get("movement_state")), MOVEMENT_STATE_IDLE,
+		"hero loss must stop animation and return to IDLE")
+	_expect(_vector3_is_equal(surviving_shadow.position,
+		hero_grid.world_position_for_cell(target) + Vector3(0.0, 0.048, 0.0)),
+		"surviving shadow must synchronize to accepted destination")
+	hero_scene.call("select_cell", Vector2i(6, 6))
+	_expect(not hero_scene.call("_confirm_move_order"),
+		"new movement must be blocked while hero resource is missing")
+	_expect_equal(hero_scene.get("actor_coordinate"), target,
+		"missing-hero retry must not mutate logical destination")
+	hero_scene.queue_free()
+	await process_frame
+
+	var invalid_texture_scene := MAIN_SCENE.instantiate()
+	root.add_child(invalid_texture_scene)
+	await process_frame
+	invalid_texture_scene.set_process(false)
+	var invalid_texture_grid: GridView = invalid_texture_scene.get("grid_view")
+	var invalid_texture_hero: Sprite3D = invalid_texture_scene.get("hero")
+	var invalid_texture_shadow: MeshInstance3D = invalid_texture_scene.get("hero_shadow")
+	invalid_texture_scene.call("select_cell", target)
+	invalid_texture_scene.call("_confirm_move_order")
+	invalid_texture_hero.pixel_size = NAN
+	invalid_texture_scene.call("_advance_movement", 0.05)
+	_expect_equal(invalid_texture_scene.get("actor_coordinate"), target,
+		"invalidated texture scale must preserve accepted destination")
+	_expect_equal(int(invalid_texture_scene.get("movement_state")), MOVEMENT_STATE_IDLE,
+		"invalidated texture scale must abort presentation")
+	_expect(_vector3_is_equal(invalid_texture_shadow.position,
+		invalid_texture_grid.world_position_for_cell(target) + Vector3(0.0, 0.048, 0.0)),
+		"valid surviving shadow must remain grounded after invalid texture scale")
+	invalid_texture_scene.call("select_cell", Vector2i(6, 6))
+	_expect(not invalid_texture_scene.call("_confirm_move_order"),
+		"new movement must be blocked while actor texture scale is invalid")
+	_expect_equal(invalid_texture_scene.get("actor_coordinate"), target,
+		"invalid-texture retry must not alter the committed destination")
+	invalid_texture_scene.queue_free()
+	await process_frame
+
+func _test_scene_release_during_movement() -> void:
+	var scene := MAIN_SCENE.instantiate()
+	root.add_child(scene)
+	await process_frame
+	scene.set_process(false)
+	scene.call("select_cell", Vector2i(7, 6))
+	_expect(scene.call("_confirm_move_order"), "scene-release fixture must begin a valid route")
+	var weak_scene: WeakRef = weakref(scene)
+	scene.queue_free()
+	await process_frame
+	_expect(weak_scene.get_ref() == null,
+		"scene destroyed during movement must release without a retained callback target")
+
+func _grid_model_snapshot(model: GridModel) -> Dictionary:
+	var snapshot: Dictionary = {}
+	for z in GridModel.DEPTH:
+		for x in GridModel.WIDTH:
+			var coordinate := Vector2i(x, z)
+			snapshot[coordinate] = [model.height_level_at(coordinate), model.surface_kind_at(coordinate)]
+	return snapshot
 
 func _test_grid_view(view: GridView, model: GridModel, initial_selection: Vector2i) -> void:
 	var registered_count: int = 0

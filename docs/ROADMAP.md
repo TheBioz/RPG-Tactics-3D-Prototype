@@ -114,16 +114,16 @@
 
 **Actualización de decisión (2026-10-22):** el autor acordó **dos modos explícitos ISO y TOPDOWN con conmutación manual**, en lugar de ISO_FULL / ISO_HYBRID / TOPDOWN por pitch con histéresis. Véase [ADR-0001 actualizado](engineering/adr/ADR-0001-pitch-presentation.md). **Es una decisión de producto, no un reporte de funcionalidades implementadas**. Pendientes límite ISO definitivo, UX de controles, tokens/props cenitales y autorización separada para programarlo.
 
-**Baseline real integrado:** `GridModel` (PR #3), `GridView` (PR #4) y `CameraController` (PR #5), con Godot 4.7.2 y **916 comprobaciones** en la CI de PR #5. La cámara actual sigue con yaw 45°/pitch 50°/zoom 17, Q/E, R/F y rueda, pitch 25–78°; **todavía no implementa** arrastre MMB, conmutación de modos, TOPDOWN ni cámara desplazable. Las casillas, resaltados, movimiento provisional del proxy y pruebas de raycast no constituyen pathfinding táctico jugable.
+**Baseline integrado en `main`:** PR #7 / R2-05A está fusionada mediante `5f7b9f39a7ac7d563e58d726cde0bec6252883a0` (incluye `GridModel`, `GridView` y `CameraController`). **PR #8 Draft, aún no fusionada**, implementa en su rama R2-05B: pathfinding/costes, validación de órdenes, preview, confirmación TAB y movimiento visual por casillas; runner local/CI en ese HEAD: **1310 checks**. Estas capacidades visuales/tácticas de PR #8 no se atribuyen al `main` integrado. La cámara actual sigue con yaw 45°/pitch 50°/zoom 17, Q/E, R/F y rueda, pitch 25–78°; **todavía no implementa** arrastre MMB ni conmutación manual ISO/TOPDOWN. La limitación visual del billboard fixed-Y a pitch 78° sigue pendiente.
 
 ### Backlog R2
 
-- [ ] **R2-01** Definir `GridCoordinate`, casilla lógica y altura; validar correspondencia entre world space, celda seleccionada y trayectoria. *Parcial:* GridModel y conversiones de GridView; trayectoria real pendiente.
+- [ ] **R2-01** Definir `GridCoordinate`, casilla lógica y altura; validar correspondencia entre world space, celda seleccionada y trayectoria. *Parcial:* GridModel/conversiones y trayectorias legales con coste ya implementados en la rama de PR #8 (no fusionada); otros contratos del hito siguen pendientes.
 - [ ] **R2-02** Renderizar escenario pequeño con 2–3 niveles de elevación y obstáculos, ilustraciones provisionales. *Baseline visual implementado y probado; gate integrado de R2 pendiente.*
 - [ ] **R2-03** Cámara ortográfica ISO rotatoria, zoom, enfoque/centrado y ayuda de altura; extender con TOPDOWN manual en trabajo separado. *Parcial:* CameraController extraído; foco fijo y sin conmutación de modo.
 - [ ] **R2-04** Picking casilla/unidad con ratón y control compatible con mando, resaltados en el mundo. *Parcial:* picking de collider real y selección de celda probados; unidad/mando pendientes.
-- [ ] **R2-05** Movimiento táctico con vecinos válidos, costes provisionales por terreno/altura y ocupación; cálculo de rutas **en dominio/aplicación**, desacoplado del render. *No confundir con TAB que teletransporta el proxy para probar anclaje.*
-- [ ] **R2-06** Pivote de pies, sombra y oclusiones frente a muros/rocas/escaleras; probar yaw completo y **rango ISO aprobado**. *Contactos pies/sombra con proxy cubiertos; QA avanzado pendiente.*
+- [x] **R2-05** Movimiento táctico con vecinos ortogonales, costes provisionales de terreno/altura y ocupación, Dijkstra determinista, resultado tipado, evaluación de orden, preview y confirmación por TAB. El coordinador confirma `actor_coordinate` una vez al aceptar; la presentación recorre los pasos usando tiempo visual independiente del coste. Presupuesto provisional **4 por orden**, reiniciado en cada orden; no hay turnos ni límite de órdenes. **Implementado en PR #8 Draft, aún no integrado en `main`**; 1310 checks y CI limpia en el HEAD revisado. Los props ilustrados siguen siendo decorativos/no bloqueantes.
+- [ ] **R2-06** Pivote de pies, sombra y oclusiones frente a muros/rocas/escaleras; probar yaw completo y **rango ISO aprobado**. *Deuda visual R2-05B: al cambiar de superficie la sombra salta entre niveles (aprox. 0,58 unidades); se acepta solo como limitación provisional del proxy, no como resuelto. Requiere QA y decisión de presentación futura.*
 - [ ] **R2-07** HUD de selección, altura, rangos y minimapa si aporta legibilidad. *HUD básico de selección ya existe; rango/minimapa pendientes.*
 - [ ] **R2-08** Medir rendimiento en escenario pequeño y carga de unidades, registrando hardware, versión y frame time.
 - [ ] **R2-09** **Presentación manual ISO ↔ TOPDOWN:** mantener ilustración vertical legible en ISO y una presentación cenital independiente del actor/props en TOPDOWN, con fallback temporal. **No implementar** ISO_HYBRID, umbrales automáticos ni histéresis. Compartir mismo estado lógico y picking, medir QA visual antes de aprobar assets. Ver [ADR-0001](engineering/adr/ADR-0001-pitch-presentation.md).
@@ -133,12 +133,12 @@
 
 1. Formalizar ADR-0001 y este roadmap (solo documentación).
 2. Separar cambios de controles MMB y conmutación de modo de la extracción B2-B ya fusionada; decidir alcance mínimo y pruebas antes de programar.
-3. Priorizar **R2-05, movimiento táctico real con rutas y costes**, frente a pulido gráfico completo de TOPDOWN, sujeto a aprobación del autor; el modo TOPDOWN podrá empezar con proxies.
+3. **Histórico (2026-10-22):** la propuesta de priorizar R2-05 frente al pulido de TOPDOWN se ejecutó como PR #8 Draft; no constituye autorización automática de ningún hito posterior. Próximos checkpoints requieren decisión explícita del autor.
 4. Probar y fijar el máximo ISO a partir de muestras 50°/55°/60°; diseñar presentación cenital de actor y objetos altos sin falsear el gate artístico.
 
 ### Gate R2
 
-Una unidad visible se selecciona y mueve mediante ruta legal con coste, restricciones de terreno/altura y estado determinista; conserva pies y sombra al cambiar altura. La cámara permite girar/zoomear **dentro del rango ISO finalmente aprobado** y alternar **ISO ↔ TOPDOWN** con representación legible y selección coherente, sin cambios del estado lógico. Documentar los ángulos problemáticos (78° en billboards verticales), no ocultarlos con capturas elegidas. El PoC técnico puede usar tokens/proxies etiquetados; no declararlo artístico por ello.
+Una unidad visible se selecciona y mueve mediante ruta legal con coste, restricciones de terreno/altura y estado determinista; conserva pies y sombra al cambiar altura. **R2-05 está implementado en la rama de PR #8**, no se afirma aún integrado en `main`. QA C3 observó una transferencia discontinua de sombra entre niveles (aprox. 0,58 unidades), registrada como deuda provisional; a pitch 78° el billboard fixed-Y pierde legibilidad (**QA FAIL conocido**, no corregido). La cámara debe girar/zoomear dentro del rango ISO que se apruebe y alternar ISO ↔ TOPDOWN con presentación legible, una vez diseñado y autorizado. **El gate global R2 permanece PENDING**: el PoC mecánico no supone gate artístico aprobado.
 
 ## 6. R3 — Scheduler híbrido y reglas de ronda
 
@@ -336,7 +336,7 @@ Antes de iniciar cualquier ticket responder:
 ## 17. Registro de estados y cambios
 
 - **2026-10-18:** **ROADMAP v0.1 creado por solicitud del autor**. No se declaran cerradas las decisiones futuras ni realizados los hitos. Las pruebas artísticas previas PC-001 se arrastran como evidencia experimental y riesgos, no como gates aprobados.
-- **2026-10-22:** **Propuesta v0.2:** actualizar el estado de R2 tras PR #3–#5 y documentar la decisión del autor de **dos modos ISO/TOPDOWN manuales**, sin modo híbrido ni conmutación automática. Se propone adelantar movimiento táctico R2-05 frente a pulido cenital avanzado, pendiente de aprobación de la prioridad. La implementación de modos/controles sigue pendiente y no está incluida en esta propuesta.
+- **2026-10-22:** **Propuesta v0.2 (registro histórico):** actualizar el estado de R2 tras PR #3–#5 y documentar la decisión del autor de **dos modos ISO/TOPDOWN manuales**, sin modo híbrido ni conmutación automática. La prioridad de adelantar R2-05 se autorizó posteriormente y su implementación está en PR #8 Draft (aún no fusionada). Este registro histórico no autoriza R2-06, R2-09 ni R3. La implementación de modos/controles sigue pendiente de autorización propia.
 - Toda modificación de requisitos después de esta versión debe indicar fecha, motivo, impacto de alcance y relación con el GDD.
 - **Fuente central de la visión:** [pre-GDD](pre_gdd/README.md). **Especificación de diseño actual:** [GDD](GDD.md).
 

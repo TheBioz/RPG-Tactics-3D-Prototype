@@ -62,6 +62,45 @@ func reachable_cells(
 		affordable_costs
 	)
 
+## Validates a constructed route and returns its cost using the same step-cost rule as Dijkstra.
+## The first cell may be occupied as the moving actor's own origin; subsequent cells may not.
+func validate_path_cost(
+	model: GridModel,
+	path: Array[Vector2i],
+	occupied_coordinates: Array[Vector2i]
+) -> MovementPathResult:
+	if model == null or path.is_empty():
+		return _invalid_path_result()
+	var start: Vector2i = path[0]
+	if not model.contains(start):
+		return _invalid_path_result()
+	var occupied := _make_occupancy_set(occupied_coordinates)
+	var visited: Dictionary = {}
+	var total_cost: int = 0
+	var previous: Vector2i = start
+	for index in path.size():
+		var coordinate: Vector2i = path[index]
+		if not model.contains(coordinate) or not _is_traversable(model, coordinate):
+			return _invalid_path_result()
+		if visited.has(coordinate):
+			return _invalid_path_result()
+		visited[coordinate] = true
+		if index == 0:
+			continue
+		if occupied.has(coordinate):
+			return _invalid_path_result()
+		var offset := coordinate - previous
+		if absi(offset.x) + absi(offset.y) != 1:
+			return _invalid_path_result()
+		var height_delta: int = model.height_level_at(coordinate) - model.height_level_at(previous)
+		if absi(height_delta) > 1:
+			return _invalid_path_result()
+		total_cost += _step_cost(model, coordinate, height_delta)
+		previous = coordinate
+	return MovementPathResult.new(
+		MovementPathResult.QueryKind.PATH, MovementPathResult.Status.SUCCESS, total_cost, path
+	)
+
 func _dijkstra(model: GridModel, start: Vector2i, occupied: Dictionary) -> Dictionary:
 	var distances: Dictionary = {start: 0}
 	var predecessors: Dictionary = {}
@@ -82,7 +121,7 @@ func _dijkstra(model: GridModel, start: Vector2i, occupied: Dictionary) -> Dicti
 			var height_delta: int = model.height_level_at(neighbor) - model.height_level_at(current)
 			if absi(height_delta) > 1:
 				continue
-			var step_cost: int = _entry_cost(model, neighbor) + maxi(height_delta, 0)
+			var step_cost: int = _step_cost(model, neighbor, height_delta)
 			var candidate_cost: int = distances[current] + step_cost
 			if not distances.has(neighbor) or candidate_cost < int(distances[neighbor]):
 				distances[neighbor] = candidate_cost
@@ -135,6 +174,9 @@ func _entry_cost(model: GridModel, coordinate: Vector2i) -> int:
 		return 2
 	return 1
 
+func _step_cost(model: GridModel, destination: Vector2i, height_delta: int) -> int:
+	return _entry_cost(model, destination) + maxi(height_delta, 0)
+
 func _is_traversable(model: GridModel, coordinate: Vector2i) -> bool:
 	var surface: int = model.surface_kind_at(coordinate)
 	var height: int = model.height_level_at(coordinate)
@@ -152,6 +194,9 @@ func _path_result(status: MovementPathResult.Status) -> MovementPathResult:
 
 func _reachability_result(status: MovementPathResult.Status) -> MovementPathResult:
 	return MovementPathResult.new(MovementPathResult.QueryKind.REACHABILITY, status)
+
+func _invalid_path_result() -> MovementPathResult:
+	return _path_result(MovementPathResult.Status.INVALID_PATH)
 
 func _make_occupancy_set(occupied_coordinates: Array[Vector2i]) -> Dictionary:
 	var occupied: Dictionary = {}

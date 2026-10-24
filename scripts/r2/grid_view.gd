@@ -18,6 +18,9 @@ var _top_materials: Array[StandardMaterial3D] = []
 var _cliff_material: StandardMaterial3D
 var _grid_overlay: MeshInstance3D
 var _selection_overlay: MeshInstance3D
+var _route_overlay: Node3D
+var _route_marker_mesh: BoxMesh
+var _route_marker_material: StandardMaterial3D
 var _registered_colliders: Dictionary = {}
 
 func configure(model: GridModel) -> bool:
@@ -28,6 +31,7 @@ func configure(model: GridModel) -> bool:
 	_build_terrain()
 	_build_grid_overlay()
 	_build_selection_overlay()
+	_build_route_overlay()
 	return _registered_colliders.size() == GridModel.WIDTH * GridModel.DEPTH
 
 func world_position_for_cell(coordinate: Vector2i) -> Vector3:
@@ -49,6 +53,33 @@ func set_selected_cell(coordinate: Vector2i) -> bool:
 func set_grid_visible(is_visible: bool) -> void:
 	if _grid_overlay != null:
 		_grid_overlay.visible = is_visible
+
+## Displays route cells after the origin; the selected destination remains yellow-highlighted.
+## The route overlay is visual-only and never participates in physics picking.
+func set_route_preview(path: Array[Vector2i]) -> bool:
+	if grid_model == null or _route_overlay == null or path.is_empty():
+		clear_route_preview()
+		return false
+	for coordinate in path:
+		if not grid_model.contains(coordinate):
+			clear_route_preview()
+			return false
+	clear_route_preview()
+	for index in range(1, path.size()):
+		var marker := MeshInstance3D.new()
+		marker.name = "RouteCell_%02d" % index
+		marker.mesh = _route_marker_mesh
+		marker.material_override = _route_marker_material
+		marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		marker.position = world_position_for_cell(path[index]) + Vector3(0.0, 0.11, 0.0)
+		_route_overlay.add_child(marker)
+	return true
+
+func clear_route_preview() -> void:
+	if _route_overlay == null:
+		return
+	for child in _route_overlay.get_children():
+		child.free()
 
 ## Return INVALID_COORDINATE unless the collider is a live node registered by this view.
 func coordinate_from_collider(collider: Object) -> Vector2i:
@@ -203,3 +234,15 @@ func _build_selection_overlay() -> void:
 	selection_material.albedo_color = Color(0.96, 0.88, 0.49, 0.32)
 	_selection_overlay.material_override = selection_material
 	add_child(_selection_overlay)
+
+func _build_route_overlay() -> void:
+	_route_overlay = Node3D.new()
+	_route_overlay.name = "RoutePreview"
+	add_child(_route_overlay)
+	_route_marker_mesh = BoxMesh.new()
+	_route_marker_mesh.size = Vector3(0.42, 0.02, 0.42)
+	_route_marker_material = StandardMaterial3D.new()
+	_route_marker_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_route_marker_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_route_marker_material.albedo_color = Color(0.12, 0.72, 0.92, 0.75)
+	_route_marker_material.cull_mode = BaseMaterial3D.CULL_DISABLED
