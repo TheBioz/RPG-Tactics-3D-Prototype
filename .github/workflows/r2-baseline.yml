@@ -1,4 +1,4 @@
-name: R2 baseline — Godot 4.7.2
+name: R2/R3 baseline — Godot 4.7.2
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   godot-baseline:
-    name: Clean import and headless smoke
+    name: Clean import, R2/R3 tests, and headless smoke
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
@@ -59,7 +59,7 @@ jobs:
           if (-not (Test-Path $godot)) { throw "Expected console executable missing from official archive: $godot" }
           "Godot executable: $godot" | Tee-Object -FilePath "$env:RUNNER_TEMP\r2-baseline-setup.log" -Append
 
-      - name: Import and run headless smoke test
+      - name: Import and run R2/R3 tests plus headless smoke
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -119,13 +119,14 @@ jobs:
           Invoke-GodotCheck -Name 'version' -Arguments @('--version') -ExpectedVersion '4.7.2.stable'
           Invoke-GodotCheck -Name 'import' -Arguments @('--headless','--path','.','--import')
           Invoke-GodotCheck -Name 'grid-tests' -Arguments @('--headless','--path','.','--script','res://tests/r2/test_runner.gd')
+          Invoke-GodotCheck -Name 'r3-tests' -Arguments @('--headless','--path','.','--script','res://tests/r3/test_runner.gd')
           Invoke-GodotCheck -Name 'smoke' -Arguments @('--headless','--path','.','--quit-after','10')
 
       - name: Upload Godot logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: r2-baseline-godot-logs
+          name: r2-r3-baseline-godot-logs
           path: |
             ${{ runner.temp }}/r2-baseline-setup.log
             ${{ runner.temp }}/r2-baseline-logs/*.log

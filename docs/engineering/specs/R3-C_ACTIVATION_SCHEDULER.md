@@ -67,3 +67,11 @@ Con créditos iniciales cero, prioridades A/B y pesos fijos:
 | 0:0 | Sin permiso; cierre inmediato | Sin permiso; cierre inmediato |
 
 Los calendarios son permisos de bando, no selección de unidades. Los casos de una unidad, bajas y continuación deben mantener las mismas reglas de revisión/permiso.
+
+## 7. Límite de confianza de checkpoints y deuda futura
+
+El checkpoint local v2 incluye `round_start_revision`. Valida coherencia estructural: ledger de unidades, roster/pesos, créditos SWRR, prioridad, ronda y revisión. Dentro de la ronda actual exige que `revision - round_start_revision` coincida con activaciones ordinarias consumidas más bajas del roster actual; un estado inicial sin transiciones requiere unidades vivas/no consumidas y crédito cero. Los créditos deben sumar cero, y también ser cero cuando todas las unidades del roster siguen vivas y pendientes.
+
+Esa validación **no autentica procedencia ni demuestra la historia completa**. Un checkpoint manipulado que siga siendo estructuralmente coherente puede restaurarse; el formato C2 no promete resistencia a manipulación arbitraria.
+
+No añadir criptografía, networking ni event sourcing en R3-C. Si el formato de checkpoint crece o se convierte en guardado persistente, considerar separar su codec/validador de `BattleState` y definir entonces un contrato de autenticidad/versionado apropiado.
