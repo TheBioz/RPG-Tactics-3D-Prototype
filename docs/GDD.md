@@ -75,14 +75,15 @@ La principal diferenciación sistémica es un **planificador de activaciones pro
 5. Habilidades excepcionales como danza o efectos de acción extra **pueden romper** la regla de una acción ordinaria, sin permitir loops infinitos.
 6. La **Velocidad** debe importar en el juego y quizá en el orden, pero **no se ha definido** cómo influye en la agenda.
 
-### 6.2 Contrato de implementación recomendado (DISEÑO PROPUESTO)
+### 6.2 Reglas aprobadas para el PoC inicial y contrato de implementación
 
-- Mantener `eligible_units`, `ordinary_activations_remaining` y registro de activaciones por unidad/bando; distinguir acciones excepcionales de la cuota ordinaria.
-- Un **scheduler puro y determinista** recibe estado y devuelve `acting_side` y tamaño/autorización de ventana; no debe depender de la UI.
-- Cuando las proporciones no sean enteras (p. ej. 7:4, 5:3, 12:7), repartir oportunidades sin bloqueos o sesgo sistemático. **Algoritmo concreto pendiente de diseño y pruebas automatizadas**; no elegir hoy una fórmula de cuota/redondeo.
-- En cada ventana, un humano o la IA decide qué unidades elegibles activar. Gastar una activación la marca como utilizada; una unidad no repite activación ordinaria por error.
-- Registrar órdenes y estado resultante para depuración, guardado, deshacer solo si se aprueba, y futura sincronización.
-- Separar muerte/reclutamiento/refuerzos a mitad de ronda y bandos neutrales como **casos límite que se prueban antes de soportar cuatro jugadores**.
+- **Decisión aprobada para el PoC inicial (R3-C, 2026-10-24):** usar Smooth Weighted Round-Robin (SWRR) determinista para exactamente dos bandos. La fórmula, prioridades y límites aprobados están en [especificación R3-C](engineering/specs/R3-C_ACTIVATION_SCHEDULER.md). Esto reemplaza las alternativas históricas de ventanas de cuotas y los desempates abiertos para este alcance; no afirma que R3-C esté completo ni fusionado.
+- El peso de cada bando es su número de unidades elegibles al inicio de la ronda y permanece congelado. En cada permiso se suman pesos de bandos con unidades vivas y activaciones ordinarias pendientes; gana el mayor crédito y resta la suma de pesos activos. Si no hay empate, la prioridad no altera el resultado.
+- Una **ventana de control** agrupa permisos consecutivos del mismo bando; no reserva permisos futuros. Tras cada activación se vuelve a consultar el scheduler. El jugador o la IA elige la unidad elegible del bando autorizado.
+- El roster se fija al inicio. Una baja previa a actuar retira elegibilidad sin consumir activación; una baja posterior conserva el historial. Refuerzos quedan para la siguiente ronda. No se implementan aún HP ni el sistema de refuerzos.
+- El consumo de activación debe ser una transición autoritativa y atómica por unidad/ronda. Consultas, cancelaciones previas y órdenes rechazadas no mutan estado ni créditos.
+- Velocidad queda fuera del reparto entre bandos en esta versión, sin eliminar su posible papel futuro. Acciones extraordinarias y reglas para bandos adicionales quedan fuera del núcleo inicial.
+- `ROUND_COMPLETE` significa que no quedan activaciones ordinarias pendientes; no expresa victoria o derrota. Iniciar la siguiente ronda es explícito y alterna la prioridad de desempate.
 
 ### 6.3 Pruebas mínimas obligatorias
 
@@ -91,11 +92,11 @@ La principal diferenciación sistémica es un **planificador de activaciones pro
 | 1 contra 1, 4 contra 4 | Todas las unidades elegibles obtienen su activación ordinaria; cierre correcto. |
 | 12 contra 4 | Reparto proporcional razonable y ronda completa sin duplicados. |
 | 7 contra 4, 5 contra 3 | Sin inanición de bando, doble acción ordinaria ni bloqueo; equidad verificable. |
-| Baja y reclutamiento en mitad de ronda | Regla documentada y estado coherente; el tratamiento exacto aún por decidir. |
+| Baja y refuerzos durante ronda | R3-C PoC: la baja lógica retira la elegibilidad sin consumir una activación. No se incorporan refuerzos durante una ronda; las nuevas unidades elegibles se contemplan al comienzo de una ronda posterior. Las reglas completas de reclutamiento y economía permanecen pendientes. |
 | Danza/acción extra | Nunca activa un bucle infinito ni permite romper límites de forma imprevista. |
 | Bandos 3–4 y neutral IA | **Posterior a PoC**, con casos de alianza y desconexión a definir. |
 
-**ABIERTO:** prioridad de banda inicial, velocidad, desempates, creación de unidades, invocaciones, aliados, neutralidad, empate de batalla, pauses, red y reconexión. El roadmap incluye un hito de cierre de estas reglas.
+**Pendiente fuera del alcance aprobado para este PoC:** reglas de creación/refuerzo durante ronda (se aplazan), incapacitación temporal, acciones extraordinarias, papel futuro de Velocidad, tres/cuatro bandos, alianzas, neutralidad, empate de batalla, pausas, red y reconexión. La fórmula SWRR y el desempate alternante ya no están abiertos para el alcance R3-C autorizado; el código y sus pruebas siguen en curso y requieren review/merge.
 
 ## 7. Movimiento y resolución de combate
 
