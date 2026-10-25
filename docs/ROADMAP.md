@@ -142,12 +142,12 @@ Una unidad visible se selecciona y mueve mediante ruta legal con coste, restricc
 
 ## 6. R3 — Scheduler híbrido y reglas de ronda
 
-- **Estado R3-C:** implementación en curso en `feat/r3-c-activation-scheduler`, checkpoint C1. El autor aprobó SWRR y reglas iniciales; la especificación está en `docs/engineering/specs/R3-C_ACTIVATION_SCHEDULER.md`. No marcar R3 ni esta implementación como completados antes de C2, revisión, regresión y aprobación/merge.
+- **Estado R3-C:** C1 aprobado; C2 está implementado en PR #10 y validado localmente y en CI. La auditoría C3 identificó un MAJOR de dependencia dominio→aplicación, corregido localmente en el parche de re-review; **C3 permanece PENDING** hasta revisión externa. PR #10 continúa Draft y no está fusionada. R3 global no está completo.
 - [ ] **R3-01** Formalizar reglas del PoC: política y elegibilidad aprobadas; incapacitación y ampliaciones siguen pendientes.
-- [ ] **R3-02** Implementar `BattleState` y registro de activaciones ordinarias consumidas, separados de cámara/UI. **C1 en curso; transición autoritativa pendiente de C2.**
+- [ ] **R3-02** Implementar `BattleState` y registro de activaciones ordinarias consumidas, separados de cámara/UI. **C2 implementa las transiciones autoritativas; revisión final C3 pendiente.**
 - [ ] **R3-03** Comparar dos políticas para proporciones no enteras y registrar diferencias. **Diseño R3-A/R3-B realizado; erratas corregidas antes de elegir SWRR.**
 - [ ] **R3-04** Especificar la política aprobada y casos iniciales. **Especificación versionada; integración aún pendiente.**
-- [ ] **R3-05** Suite automática para calendarios, proporciones y estados límite; una activación ordinaria por unidad. **C1 cubre secuencias; validación autoritativa y regresión pendientes.**
+- [ ] **R3-05** Suite automática para calendarios, proporciones y estados límite; una activación ordinaria por unidad. **C2 añade consumo, bajas y checkpoints; 2258 checks R3 y 1310 R2, CI verde en HEAD `b43237f`; revisión C3 pendiente.**
 - [ ] **R3-06** Bajas, unidades adicionales, bloqueo/desbloqueo y acciones extraordinarias. **C2 cubre bajas lógicas; refuerzos/incapacitación/acciones extra permanecen fuera hasta decisión/alcance posterior.**
 - [ ] **R3-07** Visualizar ventana/bando/unidades pendientes con UI legible; sin inventar todavía online/código de red.
 

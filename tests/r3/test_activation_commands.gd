@@ -6,6 +6,7 @@ const SchedulerScript = preload("res://scripts/r3/activation_scheduler.gd")
 const ServiceScript = preload("res://scripts/r3/activation_command_service.gd")
 const SchedulerResultScript = preload("res://scripts/r3/activation_scheduler_result.gd")
 const CommandResultScript = preload("res://scripts/r3/activation_command_result.gd")
+const TransitionResultScript = preload("res://scripts/r3/battle_transition_result.gd")
 
 var _checks: int = 0
 var _failures: PackedStringArray = []
@@ -17,6 +18,7 @@ func run() -> Dictionary:
 	_scheduler = SchedulerScript.new()
 	_test_reference_calendars_through_authoritative_commands()
 	_test_invalid_and_duplicate_activation_commands()
+	_test_domain_result_mapping_and_dependency_direction()
 	_test_casualty_transitions()
 	_test_explicit_next_round_transitions()
 	return {"checks": _checks, "failures": _failures}
@@ -95,6 +97,56 @@ func _test_invalid_and_duplicate_activation_commands() -> void:
 		CommandResultScript.Status.ROUND_COMPLETE, "completed round has no permission")
 	_expect_equal(complete_state.to_checkpoint(), complete_before,
 		"round-complete rejection must preserve full state")
+
+func _test_domain_result_mapping_and_dependency_direction() -> void:
+	var mappings: Array[Dictionary] = [
+		{"domain": TransitionResultScript.Status.APPLIED, "application": CommandResultScript.Status.APPLIED},
+		{"domain": TransitionResultScript.Status.INVALID_STATE, "application": CommandResultScript.Status.INVALID_STATE},
+		{"domain": TransitionResultScript.Status.STALE_PERMISSION, "application": CommandResultScript.Status.STALE_PERMISSION},
+		{"domain": TransitionResultScript.Status.UNKNOWN_UNIT, "application": CommandResultScript.Status.UNKNOWN_UNIT},
+		{"domain": TransitionResultScript.Status.UNIT_DEAD, "application": CommandResultScript.Status.UNIT_DEAD},
+		{"domain": TransitionResultScript.Status.UNIT_NOT_IN_ROSTER, "application": CommandResultScript.Status.UNIT_NOT_IN_ROSTER},
+		{"domain": TransitionResultScript.Status.ACTIVATION_ALREADY_USED,
+			"application": CommandResultScript.Status.ACTIVATION_ALREADY_USED},
+		{"domain": TransitionResultScript.Status.WRONG_SIDE, "application": CommandResultScript.Status.WRONG_SIDE},
+		{"domain": TransitionResultScript.Status.REVISION_EXHAUSTED,
+			"application": CommandResultScript.Status.REVISION_EXHAUSTED},
+		{"domain": TransitionResultScript.Status.STALE_STATE, "application": CommandResultScript.Status.STALE_STATE},
+		{"domain": TransitionResultScript.Status.UNIT_ALREADY_DEAD,
+			"application": CommandResultScript.Status.UNIT_ALREADY_DEAD},
+		{"domain": TransitionResultScript.Status.ROUND_NOT_COMPLETE,
+			"application": CommandResultScript.Status.ROUND_NOT_COMPLETE},
+		{"domain": TransitionResultScript.Status.ROUND_ID_EXHAUSTED,
+			"application": CommandResultScript.Status.ROUND_ID_EXHAUSTED},
+	]
+	for mapping in mappings:
+		var domain_result := TransitionResultScript.new(mapping["domain"], &"mapping_check", 9, 17)
+		var public_result: ActivationCommandResult = _service._map_domain_result(domain_result)
+		_expect_equal(public_result.status, mapping["application"],
+			"domain status maps explicitly to unchanged public command status")
+		_expect_equal(public_result.error_code, &"mapping_check", "status mapping preserves error code")
+		_expect_equal(public_result.round_id, 9, "status mapping preserves round ID")
+		_expect_equal(public_result.state_revision, 17, "status mapping preserves revision")
+	var missing: ActivationCommandResult = _service._map_domain_result(null)
+	_expect_equal(missing.status, CommandResultScript.Status.INVALID_STATE,
+		"missing domain transition result must fail safely")
+	_expect_equal(missing.error_code, &"missing_domain_transition_result",
+		"missing domain result returns stable application error code")
+	var unexpected_domain_result := TransitionResultScript.new(
+		TransitionResultScript.Status.INVALID_STATE, &"unmapped", 9, 17)
+	unexpected_domain_result.status = 999
+	var fail_closed: ActivationCommandResult = _service._map_domain_result(unexpected_domain_result)
+	_expect_equal(fail_closed.status, CommandResultScript.Status.INVALID_STATE,
+		"unrecognized domain status must fail closed")
+	_expect_equal(fail_closed.error_code, &"unmapped_domain_transition_status",
+		"unrecognized domain status returns stable mapping error")
+	_expect_equal(fail_closed.round_id, 9, "unrecognized mapping preserves round context")
+	_expect_equal(fail_closed.state_revision, 17, "unrecognized mapping preserves revision context")
+	var battle_state_source: String = FileAccess.get_file_as_string("res://scripts/r3/battle_state.gd")
+	_expect(not battle_state_source.contains("ActivationCommandResult"),
+		"BattleState domain source must not reference application result")
+	_expect(not battle_state_source.contains("ActivationCommandService"),
+		"BattleState domain source must not reference application service")
 
 func _test_casualty_transitions() -> void:
 	var state_7_4 := _make_state(7, 4, &"A")

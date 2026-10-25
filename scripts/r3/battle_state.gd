@@ -7,7 +7,7 @@ const MAX_COUNTER: int = 9223372036854775807
 const CHECKPOINT_VERSION: int = 2
 const SchedulerScript = preload("res://scripts/r3/activation_scheduler.gd")
 const SchedulerResultScript = preload("res://scripts/r3/activation_scheduler_result.gd")
-const CommandResultScript = preload("res://scripts/r3/activation_command_result.gd")
+const TransitionResultScript = preload("res://scripts/r3/battle_transition_result.gd")
 
 var _is_valid: bool = false
 var _error_code: StringName = &"not_initialized"
@@ -231,71 +231,71 @@ static func restore_checkpoint(checkpoint: Variant) -> BattleState:
 	return restored
 
 func _commit_ordinary_activation(unit_id: String,
-		permission: ActivationSchedulerResult) -> ActivationCommandResult:
+		permission: ActivationSchedulerResult) -> BattleTransitionResult:
 	if not _is_valid or permission == null:
-		return _command_result(CommandResultScript.Status.INVALID_STATE, &"invalid_battle_state")
+		return _transition_result(TransitionResultScript.Status.INVALID_STATE, &"invalid_battle_state")
 	if permission.round_id != _round_id or permission.state_revision != _revision:
-		return _command_result(CommandResultScript.Status.STALE_PERMISSION, &"permission_state_mismatch")
+		return _transition_result(TransitionResultScript.Status.STALE_PERMISSION, &"permission_state_mismatch")
 	var expected: ActivationSchedulerResult = SchedulerScript.new().peek(scheduler_snapshot())
 	if expected.status != SchedulerResultScript.Status.PERMISSION_AVAILABLE \
 		or expected.permission_id != permission.permission_id \
 		or expected.acting_side != permission.acting_side \
 		or expected.next_credit_a != permission.next_credit_a \
 		or expected.next_credit_b != permission.next_credit_b:
-		return _command_result(CommandResultScript.Status.STALE_PERMISSION, &"permission_revalidation_failed")
+		return _transition_result(TransitionResultScript.Status.STALE_PERMISSION, &"permission_revalidation_failed")
 	if not contains_unit(unit_id):
-		return _command_result(CommandResultScript.Status.UNKNOWN_UNIT, &"unknown_unit")
+		return _transition_result(TransitionResultScript.Status.UNKNOWN_UNIT, &"unknown_unit")
 	var unit_index: int = int(_unit_index_by_id[unit_id])
 	if not _unit_alive[unit_index]:
-		return _command_result(CommandResultScript.Status.UNIT_DEAD, &"unit_dead")
+		return _transition_result(TransitionResultScript.Status.UNIT_DEAD, &"unit_dead")
 	if not _unit_in_current_roster[unit_index]:
-		return _command_result(CommandResultScript.Status.UNIT_NOT_IN_ROSTER, &"unit_not_in_roster")
+		return _transition_result(TransitionResultScript.Status.UNIT_NOT_IN_ROSTER, &"unit_not_in_roster")
 	if _ordinary_activation_used[unit_index]:
-		return _command_result(CommandResultScript.Status.ACTIVATION_ALREADY_USED, &"activation_already_used")
+		return _transition_result(TransitionResultScript.Status.ACTIVATION_ALREADY_USED, &"activation_already_used")
 	if _unit_sides[unit_index] != expected.acting_side:
-		return _command_result(CommandResultScript.Status.WRONG_SIDE, &"unit_side_not_authorized")
+		return _transition_result(TransitionResultScript.Status.WRONG_SIDE, &"unit_side_not_authorized")
 	if _revision == MAX_COUNTER:
-		return _command_result(CommandResultScript.Status.REVISION_EXHAUSTED, &"revision_exhausted")
+		return _transition_result(TransitionResultScript.Status.REVISION_EXHAUSTED, &"revision_exhausted")
 
 	# No validation remains after this point: commit ledger, credits, and revision together.
 	_ordinary_activation_used[unit_index] = true
 	_credits[_side_a] = expected.next_credit_a
 	_credits[_side_b] = expected.next_credit_b
 	_revision += 1
-	return _command_result(CommandResultScript.Status.APPLIED, &"")
+	return _transition_result(TransitionResultScript.Status.APPLIED, &"")
 
 func _commit_casualty(unit_id: String, expected_round_id: int,
-		expected_revision: int) -> ActivationCommandResult:
+		expected_revision: int) -> BattleTransitionResult:
 	if not _is_valid:
-		return _command_result(CommandResultScript.Status.INVALID_STATE, &"invalid_battle_state")
+		return _transition_result(TransitionResultScript.Status.INVALID_STATE, &"invalid_battle_state")
 	if expected_round_id != _round_id or expected_revision != _revision:
-		return _command_result(CommandResultScript.Status.STALE_STATE, &"casualty_state_mismatch")
+		return _transition_result(TransitionResultScript.Status.STALE_STATE, &"casualty_state_mismatch")
 	if not contains_unit(unit_id):
-		return _command_result(CommandResultScript.Status.UNKNOWN_UNIT, &"unknown_unit")
+		return _transition_result(TransitionResultScript.Status.UNKNOWN_UNIT, &"unknown_unit")
 	var unit_index: int = int(_unit_index_by_id[unit_id])
 	if not _unit_alive[unit_index]:
-		return _command_result(CommandResultScript.Status.UNIT_ALREADY_DEAD, &"unit_already_dead")
+		return _transition_result(TransitionResultScript.Status.UNIT_ALREADY_DEAD, &"unit_already_dead")
 	if not _unit_in_current_roster[unit_index]:
-		return _command_result(CommandResultScript.Status.UNIT_NOT_IN_ROSTER, &"unit_not_in_roster")
+		return _transition_result(TransitionResultScript.Status.UNIT_NOT_IN_ROSTER, &"unit_not_in_roster")
 	if _revision == MAX_COUNTER:
-		return _command_result(CommandResultScript.Status.REVISION_EXHAUSTED, &"revision_exhausted")
+		return _transition_result(TransitionResultScript.Status.REVISION_EXHAUSTED, &"revision_exhausted")
 	_unit_alive[unit_index] = false
 	_revision += 1
-	return _command_result(CommandResultScript.Status.APPLIED, &"")
+	return _transition_result(TransitionResultScript.Status.APPLIED, &"")
 
 func _commit_next_round(expected_round_id: int,
-		expected_revision: int) -> ActivationCommandResult:
+		expected_revision: int) -> BattleTransitionResult:
 	if not _is_valid:
-		return _command_result(CommandResultScript.Status.INVALID_STATE, &"invalid_battle_state")
+		return _transition_result(TransitionResultScript.Status.INVALID_STATE, &"invalid_battle_state")
 	if expected_round_id != _round_id or expected_revision != _revision:
-		return _command_result(CommandResultScript.Status.STALE_STATE, &"round_state_mismatch")
+		return _transition_result(TransitionResultScript.Status.STALE_STATE, &"round_state_mismatch")
 	var expected: ActivationSchedulerResult = SchedulerScript.new().peek(scheduler_snapshot())
 	if expected.status != SchedulerResultScript.Status.ROUND_COMPLETE:
-		return _command_result(CommandResultScript.Status.ROUND_NOT_COMPLETE, &"ordinary_activations_pending")
+		return _transition_result(TransitionResultScript.Status.ROUND_NOT_COMPLETE, &"ordinary_activations_pending")
 	if _revision == MAX_COUNTER:
-		return _command_result(CommandResultScript.Status.REVISION_EXHAUSTED, &"revision_exhausted")
+		return _transition_result(TransitionResultScript.Status.REVISION_EXHAUSTED, &"revision_exhausted")
 	if _round_id == MAX_COUNTER:
-		return _command_result(CommandResultScript.Status.ROUND_ID_EXHAUSTED, &"round_id_exhausted")
+		return _transition_result(TransitionResultScript.Status.ROUND_ID_EXHAUSTED, &"round_id_exhausted")
 
 	var next_weights: Dictionary = {_side_a: 0, _side_b: 0}
 	var next_roster: Array[bool] = []
@@ -316,11 +316,11 @@ func _commit_next_round(expected_round_id: int,
 	_round_id += 1
 	_revision += 1
 	_round_start_revision = _revision
-	return _command_result(CommandResultScript.Status.APPLIED, &"")
+	return _transition_result(TransitionResultScript.Status.APPLIED, &"")
 
-func _command_result(status: ActivationCommandResult.Status,
-		error_code: StringName) -> ActivationCommandResult:
-	return CommandResultScript.new(status, error_code, _round_id, _revision)
+func _transition_result(status: BattleTransitionResult.Status,
+		error_code: StringName) -> BattleTransitionResult:
+	return TransitionResultScript.new(status, error_code, _round_id, _revision)
 
 static func _parse_checkpoint(checkpoint: Dictionary) -> Dictionary:
 	var keys: Array[String] = ["format_version", "round_id", "revision", "round_start_revision", "side_a", "side_b",
