@@ -142,12 +142,12 @@ Una unidad visible se selecciona y mueve mediante ruta legal con coste, restricc
 
 ## 6. R3 — Scheduler híbrido y reglas de ronda
 
-- **Estado R3-C:** C1 aprobado; C2 está implementado en PR #10 y validado localmente y en CI. La auditoría C3 identificó un MAJOR de dependencia dominio→aplicación, corregido localmente en el parche de re-review; **C3 permanece PENDING** hasta revisión externa. PR #10 continúa Draft y no está fusionada. R3 global no está completo.
+- **Estado R3-C:** gates técnicos C1, C2 y C3 superados. El MAJOR dominio→aplicación se corrigió en `cf652d1efa1d4cccf928076c5b1e3f036cc5799d`; CI #40177120009 pasó en ese HEAD (Godot 4.7.2, import, 2318 R3 y 1310 R2 checks, smoke). PR #10 permanece Draft y no está fusionada; la integración requiere autorización final expresa. R3 global no está completo.
 - [ ] **R3-01** Formalizar reglas del PoC: política y elegibilidad aprobadas; incapacitación y ampliaciones siguen pendientes.
-- [ ] **R3-02** Implementar `BattleState` y registro de activaciones ordinarias consumidas, separados de cámara/UI. **C2 implementa las transiciones autoritativas; revisión final C3 pendiente.**
+- [ ] **R3-02** Implementar `BattleState` y registro de activaciones ordinarias consumidas, separados de cámara/UI. **C2 implementa las transiciones autoritativas; C3 elimina la dependencia dominio→aplicación. Pendiente de integración en main.**
 - [ ] **R3-03** Comparar dos políticas para proporciones no enteras y registrar diferencias. **Diseño R3-A/R3-B realizado; erratas corregidas antes de elegir SWRR.**
 - [ ] **R3-04** Especificar la política aprobada y casos iniciales. **Especificación versionada; integración aún pendiente.**
-- [ ] **R3-05** Suite automática para calendarios, proporciones y estados límite; una activación ordinaria por unidad. **C2 añade consumo, bajas y checkpoints; 2258 checks R3 y 1310 R2, CI verde en HEAD `b43237f`; revisión C3 pendiente.**
+- [ ] **R3-05** Suite automática para calendarios, proporciones y estados límite; una activación ordinaria por unidad. **C2/C3: 2318 checks R3, 1310 R2 y CI #40177120009 verde en HEAD `cf652d1`. La integración aún requiere aprobación y merge.**
 - [ ] **R3-06** Bajas, unidades adicionales, bloqueo/desbloqueo y acciones extraordinarias. **C2 cubre bajas lógicas; refuerzos/incapacitación/acciones extra permanecen fuera hasta decisión/alcance posterior.**
 - [ ] **R3-07** Visualizar ventana/bando/unidades pendientes con UI legible; sin inventar todavía online/código de red.
 

@@ -92,7 +92,7 @@ La principal diferenciación sistémica es un **planificador de activaciones pro
 | 1 contra 1, 4 contra 4 | Todas las unidades elegibles obtienen su activación ordinaria; cierre correcto. |
 | 12 contra 4 | Reparto proporcional razonable y ronda completa sin duplicados. |
 | 7 contra 4, 5 contra 3 | Sin inanición de bando, doble acción ordinaria ni bloqueo; equidad verificable. |
-| Baja y reclutamiento en mitad de ronda | Regla documentada y estado coherente; el tratamiento exacto aún por decidir. |
+| Baja y refuerzos durante ronda | R3-C PoC: la baja lógica retira la elegibilidad sin consumir una activación. No se incorporan refuerzos durante una ronda; las nuevas unidades elegibles se contemplan al comienzo de una ronda posterior. Las reglas completas de reclutamiento y economía permanecen pendientes. |
 | Danza/acción extra | Nunca activa un bucle infinito ni permite romper límites de forma imprevista. |
 | Bandos 3–4 y neutral IA | **Posterior a PoC**, con casos de alianza y desconexión a definir. |
 
