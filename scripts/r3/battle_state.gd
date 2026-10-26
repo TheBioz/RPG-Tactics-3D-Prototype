@@ -102,6 +102,9 @@ func priority_side() -> StringName:
 func unit_count() -> int:
 	return _unit_ids.size()
 
+func unit_ids() -> Array[String]:
+	return _unit_ids.duplicate()
+
 func contains_unit(unit_id: String) -> bool:
 	return _unit_index_by_id.has(unit_id)
 
