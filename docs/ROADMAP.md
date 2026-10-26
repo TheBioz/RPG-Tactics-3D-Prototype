@@ -142,14 +142,15 @@ Una unidad visible se selecciona y mueve mediante ruta legal con coste, restricc
 
 ## 6. R3 — Scheduler híbrido y reglas de ronda
 
-- **Estado R3-C:** gates técnicos C1, C2 y C3 superados. El MAJOR dominio→aplicación se corrigió en `cf652d1efa1d4cccf928076c5b1e3f036cc5799d`; CI #40177120009 pasó en ese HEAD (Godot 4.7.2, import, 2318 R3 y 1310 R2 checks, smoke). PR #10 permanece Draft y no está fusionada; la integración requiere autorización final expresa. R3 global no está completo.
+- **Estado R3-C:** integrado en `main` mediante PR #10. La validación post-merge #40200198000 pasó con Godot 4.7.2, importación/smoke, **1310 checks R2** y **2318 checks R3**. Esto no completa R3 global.
+- **Estado R3-D1:** integración parcial de lectura publicada en PR #11 (Draft), commit `5794ee8ecbb2e00b61c1576020dd1ce04e1a07fe`. El presenter conectado a un `BattleState` 2:2 real muestra ronda, permiso, elegibles, actuaron y `ROUND_COMPLETE`; los IDs aún no están asociados a proxies y el movimiento R2 sigue independiente, sin consumir activaciones. CI #40312796759 pasó: importación, **2367 checks R3**, **1310 checks R2** y smoke. R3 global y gate visual R2 siguen PENDING.
 - [ ] **R3-01** Formalizar reglas del PoC: política y elegibilidad aprobadas; incapacitación y ampliaciones siguen pendientes.
-- [ ] **R3-02** Implementar `BattleState` y registro de activaciones ordinarias consumidas, separados de cámara/UI. **C2 implementa las transiciones autoritativas; C3 elimina la dependencia dominio→aplicación. Pendiente de integración en main.**
+- [ ] **R3-02** Implementar `BattleState` y registro de activaciones ordinarias consumidas, separados de cámara/UI. **C2/C3 integrados en main; D1 solo lee el estado y aún no vincula movimiento a activaciones.**
 - [ ] **R3-03** Comparar dos políticas para proporciones no enteras y registrar diferencias. **Diseño R3-A/R3-B realizado; erratas corregidas antes de elegir SWRR.**
 - [ ] **R3-04** Especificar la política aprobada y casos iniciales. **Especificación versionada; integración aún pendiente.**
-- [ ] **R3-05** Suite automática para calendarios, proporciones y estados límite; una activación ordinaria por unidad. **C2/C3: 2318 checks R3, 1310 R2 y CI #40177120009 verde en HEAD `cf652d1`. La integración aún requiere aprobación y merge.**
+- [ ] **R3-05** Suite automática para calendarios, proporciones y estados límite; una activación ordinaria por unidad. **C3 post-merge: 2318 checks R3 y 1310 R2 en CI #40200198000; R3-D1 añade pruebas del presenter localmente.**
 - [ ] **R3-06** Bajas, unidades adicionales, bloqueo/desbloqueo y acciones extraordinarias. **C2 cubre bajas lógicas; refuerzos/incapacitación/acciones extra permanecen fuera hasta decisión/alcance posterior.**
-- [ ] **R3-07** Visualizar ventana/bando/unidades pendientes con UI legible; sin inventar todavía online/código de red.
+- [ ] **R3-07** Visualizar ventana/bando/unidades pendientes con UI legible; sin inventar todavía online/código de red. **D1 parcial: HUD de lectura del estado real; falta asociación visual por ID y flujo jugable integrado. MINOR visual observado: la ayuda de movimiento se trunca en el borde del panel.**
 
 ### Gate R3
 

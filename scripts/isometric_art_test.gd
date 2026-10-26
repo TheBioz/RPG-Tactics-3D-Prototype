@@ -1,6 +1,6 @@
 extends Node3D
-## Art feasibility PoC. No tactical runtime, pathfinding or character animation.
-## All props and actor are 2D illustrations. Only terrain, walls and floor use 3D boxes.
+## R2 movement/art harness with an R3-D1 read-only turn-status demo.
+## Turn permissions are displayed from BattleState; movement remains unlinked to activations.
 
 const TEX_HERO: Texture2D = preload("res://art/pc001_map_proxy.svg")
 const TEX_TREE: Texture2D = preload("res://art/tree_birch.svg")
@@ -8,6 +8,8 @@ const TEX_TREE_B: Texture2D = preload("res://art/tree_oak.svg")
 const TEX_BUSH: Texture2D = preload("res://art/bush.svg")
 const TEX_FLOWERS: Texture2D = preload("res://art/flowers.svg")
 const TEX_RUIN: Texture2D = preload("res://art/ruin_arch.svg")
+const BattleStateScript = preload("res://scripts/r3/battle_state.gd")
+const BattleStatusPresenterScript = preload("res://scripts/presentation/battle_status_presenter.gd")
 const MOVEMENT_BUDGET: int = 4
 const MOVEMENT_STEP_DURATION_SECONDS: float = 0.2
 const MOVEMENT_TIME_EPSILON_SECONDS: float = 0.000001
@@ -34,6 +36,8 @@ var selected_coordinate: Vector2i = Vector2i(5, 6)
 var actor_coordinate: Vector2i = Vector2i(5, 6)
 var movement_command_service: MovementCommandService
 var movement_preview: MovementCommandResult
+var battle_state: BattleState
+var battle_status_presenter: BattleStatusPresenter
 var movement_message: String = "Selecciona una casilla para previsualizar una orden."
 var movement_state: MovementState = MovementState.IDLE
 var accepted_path: Array[Vector2i] = []
@@ -45,6 +49,8 @@ var _accepted_destination_surface: Vector3 = Vector3.ZERO
 func _ready() -> void:
 	grid_model = GridModel.new()
 	movement_command_service = MovementCommandService.new(MovementPathfinder.new())
+	if not _configure_turn_status_demo():
+		return
 	grid_view = GridView.new()
 	grid_view.name = "GridView"
 	add_child(grid_view)
@@ -63,6 +69,16 @@ func _ready() -> void:
 	_build_world_light()
 	_build_hud()
 	_refresh_hud()
+
+func _configure_turn_status_demo() -> bool:
+	var unit_ids: Array[String] = ["player_unit_01", "player_unit_02", "enemy_unit_01", "enemy_unit_02"]
+	var unit_sides: Array[StringName] = [&"PLAYER", &"PLAYER", &"ENEMY", &"ENEMY"]
+	battle_state = BattleStateScript.new()
+	if not battle_state.configure_round(unit_ids, unit_sides, &"PLAYER", &"ENEMY", &"PLAYER", 1):
+		push_error("IsometricArtTest could not initialize the real BattleState turn demo")
+		return false
+	battle_status_presenter = BattleStatusPresenterScript.new()
+	return true
 
 func _spawn_sprite(tex: Texture2D, x: int, z: int, height: float, pixel: float) -> Sprite3D:
 	var s := Sprite3D.new()
@@ -568,3 +584,5 @@ func _refresh_hud() -> void:
 		actor_coordinate.x, actor_coordinate.y, MOVEMENT_BUDGET,
 	]
 	hud_text.text += "\nMovimiento: %s" % movement_message
+	if is_instance_valid(battle_status_presenter):
+		hud_text.text += "\n\n" + battle_status_presenter.format_status(battle_state)
